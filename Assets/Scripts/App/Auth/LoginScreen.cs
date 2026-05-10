@@ -67,8 +67,11 @@ namespace PushPelmesh.App.Auth
         {
             await RunAuthRequestAsync(async () =>
             {
-                AuthResponse response =
-                    await AuthService.LoginAsGuestAsync();
+                AuthResponse response = await AuthService.LoginAsGuestAsync();
+
+                UserProfileResponse profile = await AuthService.GetProfileAsync();
+
+                SessionManager.SetProfile(profile);
 
                 SetStatus($"Гостевой вход: {response.user.displayName}");
 

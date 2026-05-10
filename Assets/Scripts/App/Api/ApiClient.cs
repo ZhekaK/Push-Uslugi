@@ -57,8 +57,10 @@ namespace PushPelmesh.App.Api
 
             if (request.result != UnityWebRequest.Result.Success)
             {
-                throw new Exception(
-                    $"API error: {request.responseCode} {request.error}\n{request.downloadHandler.text}");
+                throw new ApiException(
+                    request.responseCode,
+                    request.downloadHandler.text,
+                    $"API error: {request.responseCode} {request.error}");
             }
         }
     }

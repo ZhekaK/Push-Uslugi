@@ -39,7 +39,7 @@ namespace PushPelmesh.App.MainMenu
 
             try
             {
-                UserProfileResponse profile = await AuthService.GetProfileAsync();
+                UserProfileResponse profile = SessionManager.CurrentProfile;
 
                 welcomeText.text = $"Добро пожаловать, {profile.firstName}!";
 
@@ -78,7 +78,7 @@ namespace PushPelmesh.App.MainMenu
 
         private void OnLogoutClicked()
         {
-            AuthService.Logout();
+            SessionManager.Logout();
 
             SceneManager.LoadScene(loginSceneName);
         }

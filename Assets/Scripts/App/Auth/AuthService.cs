@@ -51,10 +51,5 @@ namespace PushPelmesh.App.Auth
 
             return JsonUtility.FromJson<UserProfileResponse>(responseJson);
         }
-
-        public static void Logout()
-        {
-            TokenStorage.ClearToken();
-        }
     }
 }
