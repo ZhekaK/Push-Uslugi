@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: aa911861c08d1f14aa5d8c34f2a32eff
+guid: ad4d6b6b9a675b9499dd8633fd07eac2
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -9,7 +9,7 @@ TrueTypeFontImporter:
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - Monaco
+  - Jacobs Sans
   fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0

@@ -14,6 +14,7 @@ namespace PushPelmesh.App.MainMenu
         {
             public Button Button;
             public string SceneName;
+            public bool GuestAvailable;
         }
         [Header("UI")]
         [SerializeField] private Text profileText;
@@ -21,6 +22,7 @@ namespace PushPelmesh.App.MainMenu
         [SerializeField] private Text statusText;
         [SerializeField] private Button logoutButton;
         [SerializeField] private ServiceModule[] serviceModules;
+        [SerializeField] private Button profileButton;
 
         [Header("Navigation")]
         [SerializeField] private string loginSceneName = "LoginScene";
@@ -37,6 +39,19 @@ namespace PushPelmesh.App.MainMenu
         private void Start()
         {
             LoadProfile();
+            if (SessionManager.CurrentProfile == null || SessionManager.CurrentProfile.type == "Guest")
+            {
+                GuestAvailable();
+            }
+        }
+
+        private void GuestAvailable()
+        {
+            profileButton.interactable = false;
+            foreach (ServiceModule serviceModule in serviceModules)
+            {
+                serviceModule.Button.interactable = serviceModule.GuestAvailable;
+            }
         }
 
         private void OnDestroy()
