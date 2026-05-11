@@ -1144,6 +1144,8 @@ MonoBehaviour:
   welcomeText: {fileID: 629811993}
   statusText: {fileID: 0}
   logoutButton: {fileID: 492894086}
+  xoxiGameButton: {fileID: 819564637}
+  xoxiHubSceneName: MenuXoxi
   loginSceneName: LoginScene
 --- !u!1 &792529285
 GameObject:

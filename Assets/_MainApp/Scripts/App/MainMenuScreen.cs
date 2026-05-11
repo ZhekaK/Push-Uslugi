@@ -14,6 +14,8 @@ namespace PushPelmesh.App.MainMenu
         [SerializeField] private Text welcomeText;
         [SerializeField] private Text statusText;
         [SerializeField] private Button logoutButton;
+        [SerializeField] private Button xoxiGameButton;
+        [SerializeField] private string xoxiHubSceneName = "MenuXoxi";
 
         [Header("Navigation")]
         [SerializeField] private string loginSceneName = "LoginScene";
@@ -21,6 +23,7 @@ namespace PushPelmesh.App.MainMenu
         private void Awake()
         {
             logoutButton.onClick.AddListener(OnLogoutClicked);
+            xoxiGameButton.onClick.AddListener(OnPlayGameClicked);
         }
 
         private void Start()
@@ -31,6 +34,12 @@ namespace PushPelmesh.App.MainMenu
         private void OnDestroy()
         {
             logoutButton.onClick.RemoveListener(OnLogoutClicked);
+            xoxiGameButton.onClick.RemoveListener(OnPlayGameClicked);
+        }
+
+        private void OnPlayGameClicked()
+        {
+            SceneManager.LoadScene(xoxiHubSceneName);
         }
 
         private async void LoadProfile()
@@ -41,10 +50,14 @@ namespace PushPelmesh.App.MainMenu
             {
                 UserProfileResponse profile = SessionManager.CurrentProfile;
 
+                if (profile == null)
+                {
+                    profile = await AuthService.GetProfileAsync();
+                    SessionManager.SetProfile(profile);
+                }
                 welcomeText.text = $"Добро пожаловать, {profile.firstName}!";
 
                 profileText.text =
-                    $"ID: {profile.id}\n" +
                     $"Тип: {ShowType(profile.type)}\n" +
                     $"Имя: {profile.firstName}\n" +
                     $"Фамилия: {profile.middleName}\n" +
