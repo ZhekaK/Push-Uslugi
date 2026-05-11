@@ -9,13 +9,18 @@ namespace PushPelmesh.App.MainMenu
 {
     public class MainMenuScreen : MonoBehaviour
     {
+        [Serializable]
+        public class ServiceModule
+        {
+            public Button Button;
+            public string SceneName;
+        }
         [Header("UI")]
         [SerializeField] private Text profileText;
         [SerializeField] private Text welcomeText;
         [SerializeField] private Text statusText;
         [SerializeField] private Button logoutButton;
-        [SerializeField] private Button xoxiGameButton;
-        [SerializeField] private string xoxiHubSceneName = "MenuXoxi";
+        [SerializeField] private ServiceModule[] serviceModules;
 
         [Header("Navigation")]
         [SerializeField] private string loginSceneName = "LoginScene";
@@ -23,7 +28,10 @@ namespace PushPelmesh.App.MainMenu
         private void Awake()
         {
             logoutButton.onClick.AddListener(OnLogoutClicked);
-            xoxiGameButton.onClick.AddListener(OnPlayGameClicked);
+            foreach (ServiceModule serviceModule in serviceModules)
+            {
+                serviceModule.Button.onClick.AddListener(() => OnServiceButtonClicked(serviceModule.SceneName));
+            }
         }
 
         private void Start()
@@ -34,15 +42,18 @@ namespace PushPelmesh.App.MainMenu
         private void OnDestroy()
         {
             logoutButton.onClick.RemoveListener(OnLogoutClicked);
-            xoxiGameButton.onClick.RemoveListener(OnPlayGameClicked);
+            foreach (ServiceModule serviceModule in serviceModules)
+            {
+                serviceModule.Button.onClick.RemoveAllListeners();
+            }
         }
 
-        private void OnPlayGameClicked()
+        private void OnServiceButtonClicked(string sceneName)
         {
-            SceneManager.LoadScene(xoxiHubSceneName);
+            SceneManager.LoadScene(sceneName);
         }
 
-        private async void LoadProfile()
+        public async void LoadProfile()
         {
             SetStatus("Загрузка профиля...");
 
@@ -62,6 +73,7 @@ namespace PushPelmesh.App.MainMenu
                     $"Имя: {profile.firstName}\n" +
                     $"Фамилия: {profile.middleName}\n" +
                     $"Отчество: {profile.lastName}\n" +
+                    $"Вес: {profile.weightKg} кг\n" +
                     $"Дата рождения: {profile.birthDate}";
 
                 SetStatus("Профиль загружен");

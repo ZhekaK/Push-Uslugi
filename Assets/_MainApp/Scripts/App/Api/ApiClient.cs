@@ -40,6 +40,25 @@ namespace PushPelmesh.App.Api
             return request.downloadHandler.text;
         }
 
+        public static async Task<string> PutJsonAsync(string path, string json, bool withAuth = false)
+        {
+            using var request = new UnityWebRequest(ApiConfig.BaseUrl + path, "PUT");
+
+            byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
+
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+
+            request.SetRequestHeader("Content-Type", "application/json");
+
+            if (withAuth)
+                AddAuthHeader(request);
+
+            await SendAsync(request);
+
+            return request.downloadHandler.text;
+        }
+
         private static void AddAuthHeader(UnityWebRequest request)
         {
             var token = TokenStorage.GetToken();

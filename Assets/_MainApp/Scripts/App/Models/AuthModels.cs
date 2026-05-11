@@ -26,6 +26,19 @@ namespace PushPelmesh.App.Models
     }
 
     [Serializable]
+    public class UpdateWeightRequest
+    {
+        public float weightKg;
+    }
+
+    [Serializable]
+    public class UpdateWeightResponse
+    {
+        public string message;
+        public float weightKg;
+    }
+
+    [Serializable]
     public class UserProfileResponse
     {
         public int id;
@@ -38,5 +51,7 @@ namespace PushPelmesh.App.Models
 
         public string createdAt;
         public string lastLoginAt;
+
+        public float weightKg;
     }
 }
