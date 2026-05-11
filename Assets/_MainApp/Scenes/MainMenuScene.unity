@@ -1374,6 +1374,8 @@ MonoBehaviour:
     SceneName: MenuXoxi
   - Button: {fileID: 419404832}
     SceneName: Alcometr
+  - Button: {fileID: 1613479036}
+    SceneName: GovCalculator
   loginSceneName: LoginScene
 --- !u!1 &792529285
 GameObject:

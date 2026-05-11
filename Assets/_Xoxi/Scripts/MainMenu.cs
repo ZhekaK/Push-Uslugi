@@ -56,9 +56,9 @@ public class MainMenu : MonoBehaviour
     {
         if (Saver.saves._lang == Lang.ru)
         {
-            difficultDropdown.options[0].text = "�����";
-            difficultDropdown.options[1].text = "������";
-            difficultDropdown.options[2].text = "������";
+            difficultDropdown.options[0].text = "Легко";
+            difficultDropdown.options[1].text = "Средне";
+            difficultDropdown.options[2].text = "Сложно";
         }
         else if (Saver.saves._lang == Lang.en)
         {
