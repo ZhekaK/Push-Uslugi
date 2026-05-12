@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no, interactive-widget=resizes-content">
+  <meta name="theme-color" content="#e5e5e5">
+
+  <title>{{{ PRODUCT_NAME }}}</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+
+  <style>
+    :root {
+      --app-left: 0px;
+      --app-top: 0px;
+      --app-height: 100vh;
+      --app-width: 100vw;
+      background: #e5e5e5;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      min-height: 100%;
+      overflow: hidden;
+      background: #e5e5e5;
+      font-family: Arial, sans-serif;
+      -webkit-text-size-adjust: 100%;
+      overscroll-behavior: none;
+      touch-action: none;
+    }
+
+    body {
+      position: fixed;
+      inset: 0;
+      min-height: -webkit-fill-available;
+    }
+
+    #unity-container {
+      position: fixed;
+      left: var(--app-left);
+      top: var(--app-top);
+      width: var(--app-width);
+      height: var(--app-height);
+      box-sizing: border-box;
+      padding:
+        env(safe-area-inset-top, 0px)
+        env(safe-area-inset-right, 0px)
+        env(safe-area-inset-bottom, 0px)
+        env(safe-area-inset-left, 0px);
+      overflow: hidden;
+      background: #e5e5e5;
+    }
+
+    #unity-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #e5e5e5;
+      outline: none;
+      touch-action: none;
+    }
+
+    #loading-screen {
+      position: fixed;
+      left: var(--app-left);
+      top: var(--app-top);
+      z-index: 10;
+      width: var(--app-width);
+      height: var(--app-height);
+      box-sizing: border-box;
+      padding:
+        env(safe-area-inset-top, 0px)
+        env(safe-area-inset-right, 0px)
+        env(safe-area-inset-bottom, 0px)
+        env(safe-area-inset-left, 0px);
+      background: #e5e5e5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      opacity: 1;
+      transition: opacity 180ms ease;
+      pointer-events: none;
+    }
+
+    #loading-screen.hidden {
+      opacity: 0;
+    }
+
+    #loading-logo {
+      width: 86px;
+      height: 86px;
+      object-fit: contain;
+      margin-top: 26px;
+    }
+
+    #loading-spinner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 42px;
+      height: 42px;
+      margin-left: -21px;
+      margin-top: -21px;
+      border: 5px solid rgba(0, 92, 185, 0.18);
+      border-top: 5px solid #005cb9;
+      border-radius: 50%;
+      animation: spin 0.85s linear infinite;
+    }
+
+    @supports (height: 100dvh) {
+      :root {
+        --app-height: 100dvh;
+      }
+    }
+
+    @supports (height: 100svh) {
+      body {
+        min-height: 100svh;
+      }
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="loading-screen">
+    <img id="loading-logo" src="favicon.png" alt="{{{ PRODUCT_NAME }}}">
+    <div id="loading-spinner"></div>
+  </div>
+
+  <div id="unity-container">
+    <canvas id="unity-canvas" tabindex="-1"></canvas>
+  </div>
+
+  <script>
+    const canvas = document.querySelector("#unity-canvas");
+    const container = document.querySelector("#unity-container");
+    const loadingScreen = document.querySelector("#loading-screen");
+    let unityInstance = null;
+    let resizeFrame = 0;
+    let resizeTimers = [];
+    let requestedOrientationMode = "any";
+
+    function getViewportSize() {
+      const viewport = window.visualViewport;
+      const fallbackWidth = window.innerWidth || document.documentElement.clientWidth || screen.width;
+      const fallbackHeight = window.innerHeight || document.documentElement.clientHeight || screen.height;
+
+      return {
+        left: Math.max(0, Math.floor(viewport ? viewport.offsetLeft : 0)),
+        top: Math.max(0, Math.floor(viewport ? viewport.offsetTop : 0)),
+        width: Math.max(1, Math.floor(viewport ? viewport.width : fallbackWidth)),
+        height: Math.max(1, Math.floor(viewport ? viewport.height : fallbackHeight))
+      };
+    }
+
+    function applyViewportSize() {
+      const size = getViewportSize();
+      document.documentElement.style.setProperty("--app-left", `${size.left}px`);
+      document.documentElement.style.setProperty("--app-top", `${size.top}px`);
+      document.documentElement.style.setProperty("--app-width", `${size.width}px`);
+      document.documentElement.style.setProperty("--app-height", `${size.height}px`);
+      container.style.width = `${size.width}px`;
+      container.style.height = `${size.height}px`;
+      canvas.style.width = "100%";
+      canvas.style.height = "100%";
+
+      if (unityInstance && unityInstance.Module && typeof unityInstance.Module.setCanvasSize === "function") {
+        const rect = canvas.getBoundingClientRect();
+        unityInstance.Module.setCanvasSize(
+          Math.max(1, Math.floor(rect.width)),
+          Math.max(1, Math.floor(rect.height))
+        );
+      }
+    }
+
+    function resizeUnityContainer() {
+      window.cancelAnimationFrame(resizeFrame);
+      resizeFrame = window.requestAnimationFrame(applyViewportSize);
+    }
+
+    function settleViewportResize() {
+      resizeUnityContainer();
+      resizeTimers.forEach((timer) => window.clearTimeout(timer));
+      resizeTimers = [60, 180, 360, 700].map((delay) => window.setTimeout(resizeUnityContainer, delay));
+    }
+
+    function normalizeOrientationMode(mode) {
+      return mode === "landscape" ? "landscape" : "any";
+    }
+
+    function requestBrowserOrientation() {
+      if (typeof screen === "undefined") {
+        return;
+      }
+
+      const orientation = screen.orientation;
+
+      if (!orientation || typeof orientation.lock !== "function") {
+        return;
+      }
+
+      try {
+        if (requestedOrientationMode === "landscape") {
+          const lockResult = orientation.lock("landscape");
+
+          if (lockResult && typeof lockResult.catch === "function") {
+            lockResult.catch(() => {});
+          }
+        } else if (typeof orientation.unlock === "function") {
+          orientation.unlock();
+        }
+      } catch (error) {
+      }
+    }
+
+    function setOrientationMode(mode) {
+      requestedOrientationMode = normalizeOrientationMode(mode);
+      document.documentElement.dataset.orientationMode = requestedOrientationMode;
+      settleViewportResize();
+      requestBrowserOrientation();
+    }
+
+    window.PushUslugiViewport = {
+      resize: settleViewportResize,
+      setOrientationMode
+    };
+
+    resizeUnityContainer();
+    window.addEventListener("resize", settleViewportResize);
+    window.addEventListener("orientationchange", settleViewportResize);
+    window.addEventListener("pageshow", settleViewportResize);
+    window.addEventListener("pointerdown", requestBrowserOrientation, { passive: true });
+    window.addEventListener("pushuslugi-orientation-mode", (event) => {
+      setOrientationMode(event.detail ? event.detail.mode : "any");
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        settleViewportResize();
+      }
+    });
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", settleViewportResize);
+      window.visualViewport.addEventListener("scroll", resizeUnityContainer);
+    }
+
+    setOrientationMode(window.__pushUslugiOrientationMode);
+    canvas.addEventListener("contextmenu", (event) => event.preventDefault());
+  </script>
+
+  <script src="Build/{{{ LOADER_FILENAME }}}"></script>
+
+  <script>
+    createUnityInstance(canvas, {
+      arguments: [],
+      dataUrl: "Build/{{{ DATA_FILENAME }}}",
+      frameworkUrl: "Build/{{{ FRAMEWORK_FILENAME }}}",
+      codeUrl: "Build/{{{ CODE_FILENAME }}}",
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: "{{{ COMPANY_NAME }}}",
+      productName: "{{{ PRODUCT_NAME }}}",
+      productVersion: "{{{ PRODUCT_VERSION }}}",
+      matchWebGLToCanvasSize: true
+    }).then((instance) => {
+      unityInstance = instance;
+      settleViewportResize();
+      loadingScreen.classList.add("hidden");
+      window.setTimeout(() => {
+        loadingScreen.style.display = "none";
+      }, 220);
+    }).catch((message) => {
+      alert(message);
+    });
+  </script>
+</body>
+</html>

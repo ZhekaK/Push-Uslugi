@@ -84,7 +84,7 @@ namespace PushPelmesh.GovCalculator.EditorTools
 
         private static GovCalculatorScreen FindOrCreateScreen()
         {
-            GovCalculatorScreen screen = Object.FindObjectOfType<GovCalculatorScreen>();
+            GovCalculatorScreen screen = Object.FindFirstObjectByType<GovCalculatorScreen>();
             if (screen != null)
                 return screen;
 
@@ -305,7 +305,7 @@ namespace PushPelmesh.GovCalculator.EditorTools
 
         private static void EnsureEventSystem()
         {
-            EventSystem eventSystem = Object.FindObjectOfType<EventSystem>();
+            EventSystem eventSystem = Object.FindFirstObjectByType<EventSystem>();
             if (eventSystem != null)
                 return;
 

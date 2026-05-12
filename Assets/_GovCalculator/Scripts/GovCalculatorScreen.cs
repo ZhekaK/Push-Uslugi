@@ -1,4 +1,5 @@
 using System.Globalization;
+using PushPelmesh.App;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -14,6 +15,8 @@ namespace PushPelmesh.GovCalculator
         [Header("Output")]
         [SerializeField] private Text regularPersonText;
         [SerializeField] private Text discountPersonText;
+        [SerializeField] private Text checkText;
+        [SerializeField] private Text statusText;
 
         [Header("Buttons")]
         [SerializeField] private Button calculateButton;
@@ -32,6 +35,8 @@ namespace PushPelmesh.GovCalculator
 
         private void Awake()
         {
+            PushPelmesh.App.ScreenOrientationPolicy.AllowAnyOrientation();
+
             if (!HasRequiredReferences())
             {
                 Debug.LogError("GovCalculatorScreen: UI references are not assigned. Use Tools/Push Uslugi/Gov Calculator/Generate UI In Current Scene.");
@@ -81,9 +86,19 @@ namespace PushPelmesh.GovCalculator
 
             decimal regularPayment = total / (people - 0.5m);
             decimal discountPayment = regularPayment / 2m;
+            int regularPeopleCount = Mathf.Max(people - 1, 0);
 
             regularPersonText.text = $"Обычный человек: {FormatMoney(regularPayment)}";
             discountPersonText.text = $"Человек с льготой: {FormatMoney(discountPayment)}";
+
+            if (checkText != null)
+            {
+                checkText.text =
+                    $"Проверка: {regularPeopleCount} обычн. x {FormatMoney(regularPayment)} + " +
+                    $"1 льготн. x {FormatMoney(discountPayment)} = {FormatMoney(total)}";
+            }
+
+            SetStatus("Расчёт выполнен");
         }
 
         public void Clear()
@@ -92,6 +107,11 @@ namespace PushPelmesh.GovCalculator
             totalInput.text = string.Empty;
             regularPersonText.text = "Обычный человек: -";
             discountPersonText.text = "Человек с льготой: -";
+
+            if (checkText != null)
+                checkText.text = "Введите количество человек и общую сумму.";
+
+            SetStatus(string.Empty);
         }
 
         public void BackToMainMenu()
@@ -179,6 +199,17 @@ namespace PushPelmesh.GovCalculator
         {
             regularPersonText.text = "Обычный человек: -";
             discountPersonText.text = "Человек с льготой: -";
+
+            if (checkText != null)
+                checkText.text = "Формула: x = S / (N - 0,5), y = x / 2";
+
+            SetStatus(message);
+        }
+
+        private void SetStatus(string message)
+        {
+            if (statusText != null)
+                statusText.text = message;
         }
     }
 }

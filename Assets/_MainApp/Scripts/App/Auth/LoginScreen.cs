@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using PushPelmesh.App;
 using PushPelmesh.App.Models;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -25,6 +26,7 @@ namespace PushPelmesh.App.Auth
 
         private void Awake()
         {
+            PushPelmesh.App.ScreenOrientationPolicy.AllowAnyOrientation();
             loginButton.onClick.AddListener(OnLoginButtonClicked);
             guestButton.onClick.AddListener(OnGuestButtonClicked);
         }
@@ -56,6 +58,9 @@ namespace PushPelmesh.App.Auth
             {
                 AuthResponse response =
                     await AuthService.LoginByKeyAsync(series, number);
+
+                UserProfileResponse profile = await AuthService.GetProfileAsync();
+                SessionManager.SetProfile(profile);
 
                 SetStatus($"Вход выполнен: {response.user.displayName}");
 

@@ -1,9 +1,55 @@
 using System;
+using System.Runtime.InteropServices;
 using PushPelmesh.App.Auth;
 using PushPelmesh.App.Models;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+
+namespace PushPelmesh.App
+{
+    public static class ScreenOrientationPolicy
+    {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        [DllImport("__Internal")]
+        private static extern void PushUslugiSetOrientationMode(string mode);
+#endif
+
+        public static void AllowAnyOrientation()
+        {
+            Screen.autorotateToPortrait = true;
+            Screen.autorotateToPortraitUpsideDown = true;
+            Screen.autorotateToLandscapeLeft = true;
+            Screen.autorotateToLandscapeRight = true;
+            Screen.orientation = ScreenOrientation.AutoRotation;
+            SetWebGlOrientationMode("any");
+        }
+
+        public static void UseLandscapeOnly()
+        {
+            Screen.autorotateToPortrait = false;
+            Screen.autorotateToPortraitUpsideDown = false;
+            Screen.autorotateToLandscapeLeft = true;
+            Screen.autorotateToLandscapeRight = true;
+            Screen.orientation = ScreenOrientation.LandscapeLeft;
+            SetWebGlOrientationMode("landscape");
+        }
+
+        private static void SetWebGlOrientationMode(string mode)
+        {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            try
+            {
+                PushUslugiSetOrientationMode(mode);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning($"WebGL orientation request failed: {exception.Message}");
+            }
+#endif
+        }
+    }
+}
 
 namespace PushPelmesh.App.MainMenu
 {
@@ -29,6 +75,7 @@ namespace PushPelmesh.App.MainMenu
 
         private void Awake()
         {
+            PushPelmesh.App.ScreenOrientationPolicy.AllowAnyOrientation();
             logoutButton.onClick.AddListener(OnLogoutClicked);
             foreach (ServiceModule serviceModule in serviceModules)
             {
@@ -39,18 +86,19 @@ namespace PushPelmesh.App.MainMenu
         private void Start()
         {
             LoadProfile();
-            if (SessionManager.CurrentProfile == null || SessionManager.CurrentProfile.type == "Guest")
-            {
-                GuestAvailable();
-            }
         }
 
-        private void GuestAvailable()
+        private void ApplyAccess(UserProfileResponse profile)
         {
-            profileButton.interactable = false;
+            bool isGuest = profile == null || profile.type == "Guest";
+
+            if (profileButton != null)
+                profileButton.interactable = !isGuest;
+
             foreach (ServiceModule serviceModule in serviceModules)
             {
-                serviceModule.Button.interactable = serviceModule.GuestAvailable;
+                if (serviceModule.Button != null)
+                    serviceModule.Button.interactable = !isGuest || serviceModule.GuestAvailable;
             }
         }
 
@@ -92,11 +140,13 @@ namespace PushPelmesh.App.MainMenu
                     $"Дата рождения: {profile.birthDate}";
 
                 SetStatus("Профиль загружен");
+                ApplyAccess(profile);
             }
             catch (Exception exception)
             {
                 Debug.LogError(exception);
 
+                ApplyAccess(null);
                 SetStatus("Ошибка загрузки профиля. Выполните вход заново.");
             }
         }

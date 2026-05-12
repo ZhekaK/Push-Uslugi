@@ -17,6 +17,7 @@ namespace PushPelmesh.App.Startup
 
         private async void Start()
         {
+            PushPelmesh.App.ScreenOrientationPolicy.AllowAnyOrientation();
             SetStatus("Проверка авторизации...");
 
             try

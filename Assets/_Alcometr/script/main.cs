@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using PushPelmesh.App;
 using PushPelmesh.App.Auth;
 using UnityEngine.SceneManagement;
 using System;
@@ -44,6 +45,11 @@ public class main : MonoBehaviour
     public float alcoScoreFour;
     public float alcoScoreFive;
     public GameObject other;
+
+    private void Awake()
+    {
+        PushPelmesh.App.ScreenOrientationPolicy.AllowAnyOrientation();
+    }
 
     public void reset()
     {

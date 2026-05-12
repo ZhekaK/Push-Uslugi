@@ -1,5 +1,6 @@
 using System.Collections;
 using DG.Tweening;
+using PushPelmesh.App;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -62,6 +63,7 @@ public class Controller : MonoBehaviour
 
     private void Awake()
     {
+        PushPelmesh.App.ScreenOrientationPolicy.UseLandscapeOnly();
         instance = this;
 
         bot = MainMenu.botEnable;
