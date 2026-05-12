@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace PushPelmesh.App.Models
 {
@@ -41,17 +42,33 @@ namespace PushPelmesh.App.Models
     [Serializable]
     public class UserProfileResponse
     {
-        public int id;
         public string type;
+        public string series;
+        public string number;
 
         public string firstName;
         public string middleName;
         public string lastName;
         public string birthDate;
-
-        public string createdAt;
-        public string lastLoginAt;
+        public string sex;
+        public string giveDate;
+        public string givePlace;
 
         public float weightKg;
+    }
+
+    [Serializable]
+    public class UserRoleResponse
+    {
+        [Serializable]
+        public class UserRoleDTO
+        {
+            public string number;
+            public string postName;
+            public string givePlace;
+            public string startDate;
+        }
+
+        public List<UserRoleDTO> roles = new List<UserRoleDTO>();
     }
 }

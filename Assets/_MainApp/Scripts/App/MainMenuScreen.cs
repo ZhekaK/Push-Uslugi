@@ -63,9 +63,7 @@ namespace PushPelmesh.App.MainMenu
             public bool GuestAvailable;
         }
         [Header("UI")]
-        [SerializeField] private Text profileText;
         [SerializeField] private Text welcomeText;
-        [SerializeField] private Text statusText;
         [SerializeField] private Button logoutButton;
         [SerializeField] private ServiceModule[] serviceModules;
         [SerializeField] private Button profileButton;
@@ -118,8 +116,6 @@ namespace PushPelmesh.App.MainMenu
 
         public async void LoadProfile()
         {
-            SetStatus("Загрузка профиля...");
-
             try
             {
                 UserProfileResponse profile = SessionManager.CurrentProfile;
@@ -131,15 +127,8 @@ namespace PushPelmesh.App.MainMenu
                 }
                 welcomeText.text = $"Добро пожаловать, {profile.firstName}!";
 
-                profileText.text =
-                    $"Тип: {ShowType(profile.type)}\n" +
-                    $"Имя: {profile.firstName}\n" +
-                    $"Фамилия: {profile.middleName}\n" +
-                    $"Отчество: {profile.lastName}\n" +
-                    $"Вес: {profile.weightKg} кг\n" +
-                    $"Дата рождения: {profile.birthDate}";
+                SessionManager.userRole = await AuthService.GetUserRolesAsync();
 
-                SetStatus("Профиль загружен");
                 ApplyAccess(profile);
             }
             catch (Exception exception)
@@ -147,22 +136,6 @@ namespace PushPelmesh.App.MainMenu
                 Debug.LogError(exception);
 
                 ApplyAccess(null);
-                SetStatus("Ошибка загрузки профиля. Выполните вход заново.");
-            }
-        }
-
-        private string ShowType(string type)
-        {
-            switch (type)
-            {
-                case "Guest":
-                    return "Гость";
-                case "KeyUser":
-                    return "Гражданин";
-                case "Admin":
-                    return "Администратор";
-                default:
-                    return $"Добро пожаловать, {type}!";
             }
         }
 
@@ -171,12 +144,6 @@ namespace PushPelmesh.App.MainMenu
             SessionManager.Logout();
 
             SceneManager.LoadScene(loginSceneName);
-        }
-
-        private void SetStatus(string message)
-        {
-            if (statusText != null)
-                statusText.text = message;
         }
     }
 }

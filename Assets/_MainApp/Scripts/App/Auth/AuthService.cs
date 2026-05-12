@@ -52,6 +52,15 @@ namespace PushPelmesh.App.Auth
             return JsonUtility.FromJson<UserProfileResponse>(responseJson);
         }
 
+        public static async Task<UserRoleResponse> GetUserRolesAsync()
+        {
+            string responseJson = await ApiClient.GetAsync(
+                "/api/user/role",
+                withAuth: true);
+
+            return JsonUtility.FromJson<UserRoleResponse>(responseJson);
+        }
+
         public static async Task<UpdateWeightResponse> UpdateWeightAsync(float weightKg)
         {
             var request = new UpdateWeightRequest

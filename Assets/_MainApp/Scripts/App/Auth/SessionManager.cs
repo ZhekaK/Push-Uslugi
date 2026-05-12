@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using PushPelmesh.App.Api;
 using PushPelmesh.App.Models;
@@ -7,6 +8,7 @@ namespace PushPelmesh.App.Auth
     public static class SessionManager
     {
         public static UserProfileResponse CurrentProfile { get; private set; }
+        public static UserRoleResponse userRole { get; set; }
 
         public static bool IsAuthorized =>
             TokenStorage.HasToken();
