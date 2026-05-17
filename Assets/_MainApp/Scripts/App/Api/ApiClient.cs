@@ -40,6 +40,19 @@ namespace PushPelmesh.App.Api
             return request.downloadHandler.text;
         }
 
+        public static async Task<string> DeleteAsync(string path, bool withAuth = false)
+        {
+            using var request = UnityWebRequest.Delete(ApiConfig.BaseUrl + path);
+            request.downloadHandler = new DownloadHandlerBuffer();
+
+            if (withAuth)
+                AddAuthHeader(request);
+
+            await SendAsync(request);
+
+            return request.downloadHandler.text;
+        }
+
         public static async Task<string> PutJsonAsync(string path, string json, bool withAuth = false)
         {
             using var request = new UnityWebRequest(ApiConfig.BaseUrl + path, "PUT");

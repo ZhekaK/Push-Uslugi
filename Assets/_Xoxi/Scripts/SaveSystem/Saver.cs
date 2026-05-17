@@ -3,9 +3,11 @@ using YG;
 
 public class SaveManager : MonoBehaviour
 {
-    private void Awake()
+    private async void Awake()
     {
-        Saver.LoadProgress();
-        Saver.SaveProgress();
+        bool serverReached = await Saver.LoadProgressAsync();
+
+        if (serverReached)
+            await Saver.SaveProgressAsync();
     }
 }

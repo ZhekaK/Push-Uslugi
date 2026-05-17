@@ -42,6 +42,7 @@ namespace PushPelmesh.App.Models
     [Serializable]
     public class UserProfileResponse
     {
+        public int id;
         public string type;
         public string series;
         public string number;
@@ -64,6 +65,7 @@ namespace PushPelmesh.App.Models
         public class UserRoleDTO
         {
             public string number;
+            public string roleType;
             public string postName;
             public string givePlace;
             public string startDate;

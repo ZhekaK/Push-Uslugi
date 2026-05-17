@@ -27,6 +27,8 @@ public class MainMenu : MonoBehaviour
     [SerializeField] private string menuSceneName = "MainMenuScene";
     [SerializeField] private string gameSceneName = "GameXoxi";
 
+    private bool isApplyingSaves;
+
     private void Awake()
     {
         PushPelmesh.App.ScreenOrientationPolicy.UseLandscapeOnly();
@@ -38,20 +40,40 @@ public class MainMenu : MonoBehaviour
         menuButton.onClick.AddListener(() => SceneManager.LoadScene(menuSceneName));
     }
 
+    private void OnEnable()
+    {
+        Saver.ProgressLoaded += LoadDelay;
+    }
+
+    private void OnDisable()
+    {
+        Saver.ProgressLoaded -= LoadDelay;
+    }
+
     private void Start()
     {
         Invoke(nameof(LoadDelay), 0.1f);
     }
     private void LoadDelay()
     {
-        langDropdown.value = (int)Saver.saves._lang;
-        difficultDropdown.value = (int)Saver.saves.difficult;
-        anim.isOn = Saver.saves.anim;
-        sound.isOn = Saver.saves.sound;
-        timer.isOn = Saver.saves.timerTurn;
-        markLastFigure.isOn = Saver.saves.markLastFigure;
-        animSpeed.value = Saver.saves.animationSpeed;
-        ChangeDropdownText();
+        isApplyingSaves = true;
+
+        try
+        {
+            langDropdown.value = (int)Saver.saves._lang;
+            difficultDropdown.value = (int)Saver.saves.difficult;
+            anim.isOn = Saver.saves.anim;
+            sound.isOn = Saver.saves.sound;
+            timer.isOn = Saver.saves.timerTurn;
+            markLastFigure.isOn = Saver.saves.markLastFigure;
+            animSpeed.value = Saver.saves.animationSpeed;
+            ChangeDropdownText();
+            changeLanguageAction?.Invoke();
+        }
+        finally
+        {
+            isApplyingSaves = false;
+        }
     }
 
     private void ChangeDropdownText()
@@ -91,6 +113,9 @@ public class MainMenu : MonoBehaviour
 
     public void changeLang(int index)
     {
+        if (isApplyingSaves)
+            return;
+
         Saver.saves._lang = (Lang)index;
         changeLanguageAction?.Invoke();
         ChangeDropdownText();
@@ -99,36 +124,54 @@ public class MainMenu : MonoBehaviour
 
     public void changeDifficult(int index)
     {
+        if (isApplyingSaves)
+            return;
+
         Saver.saves.difficult = (Difficult)index;
         Saver.SaveProgress();
     }
 
     public void changeAnim(bool index)
     {
+        if (isApplyingSaves)
+            return;
+
         Saver.saves.anim = index;
         Saver.SaveProgress();
     }
 
     public void changeAnimSpeed(float index)
     {
+        if (isApplyingSaves)
+            return;
+
         Saver.saves.animationSpeed = index;
         Saver.SaveProgress();
     }
 
     public void changeSound(bool index)
     {
+        if (isApplyingSaves)
+            return;
+
         Saver.saves.sound = index;
         Saver.SaveProgress();
     }
 
     public void changeTimer(bool index)
     {
+        if (isApplyingSaves)
+            return;
+
         Saver.saves.timerTurn = index;
         Saver.SaveProgress();
     }
 
     public void changeMarkLast(bool index)
     {
+        if (isApplyingSaves)
+            return;
+
         Saver.saves.markLastFigure = index;
         Saver.SaveProgress();
     }

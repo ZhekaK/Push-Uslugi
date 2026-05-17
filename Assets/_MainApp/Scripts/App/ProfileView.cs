@@ -88,7 +88,7 @@ namespace PushPelmesh.App.Profile
                 await AuthService.UpdateWeightAsync(weight);
 
                 SetStatus("Вес сохранён");
-                Start();
+                LoadDocuments();
             }
             catch (Exception exception)
             {

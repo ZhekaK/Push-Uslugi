@@ -1,5 +1,8 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
+using PushPelmesh.App.Api;
+using PushPelmesh.App.Auth;
 using UnityEngine;
 
 namespace YG
@@ -87,6 +90,10 @@ namespace YG
         public static readonly EnvirData envir = new EnvirData();
 
         private static SavesData _saves;
+        private static bool _remoteSaveInProgress;
+        private static bool _remoteSaveRequested;
+
+        public static event Action ProgressLoaded;
 
         public static SavesData saves
         {
@@ -109,10 +116,137 @@ namespace YG
             saves = LocalBinarySave.Load();
         }
 
+        public static async Task<bool> LoadProgressAsync()
+        {
+            LoadProgress();
+
+            if (!XoxiServerSave.CanUseServer)
+            {
+                ProgressLoaded?.Invoke();
+                return false;
+            }
+
+            bool serverReached = false;
+
+            try
+            {
+                SavesData serverSave = await XoxiServerSave.LoadAsync();
+                serverReached = true;
+
+                if (serverSave != null)
+                    saves = serverSave;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning("Failed to load Xoxi save from server. Local/default save will be used. " + exception.Message);
+            }
+
+            ProgressLoaded?.Invoke();
+            return serverReached;
+        }
+
         public static void SaveProgress()
+        {
+            SaveProgressLocal();
+            QueueRemoteSave();
+        }
+
+        public static async Task SaveProgressAsync()
+        {
+            SaveProgressLocal();
+
+            if (XoxiServerSave.CanUseServer)
+                await SaveProgressRemoteAsync();
+        }
+
+        private static void SaveProgressLocal()
         {
             saves.EnsureValid();
             LocalBinarySave.Save(saves);
+        }
+
+        private static void QueueRemoteSave()
+        {
+            if (!XoxiServerSave.CanUseServer)
+                return;
+
+            _remoteSaveRequested = true;
+
+            if (!_remoteSaveInProgress)
+                _ = FlushRemoteSaveQueueAsync();
+        }
+
+        private static async Task FlushRemoteSaveQueueAsync()
+        {
+            _remoteSaveInProgress = true;
+
+            try
+            {
+                while (_remoteSaveRequested)
+                {
+                    _remoteSaveRequested = false;
+                    await SaveProgressRemoteAsync();
+                }
+            }
+            finally
+            {
+                _remoteSaveInProgress = false;
+
+                if (_remoteSaveRequested)
+                    _ = FlushRemoteSaveQueueAsync();
+            }
+        }
+
+        private static async Task SaveProgressRemoteAsync()
+        {
+            try
+            {
+                await XoxiServerSave.SaveAsync(saves);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning("Failed to save Xoxi data to server. " + exception.Message);
+            }
+        }
+    }
+
+    internal static class XoxiServerSave
+    {
+        private const string SavePath = "/api/xoxi/save";
+
+        public static bool CanUseServer
+        {
+            get { return !string.IsNullOrWhiteSpace(TokenStorage.GetToken()); }
+        }
+
+        public static async Task<SavesData> LoadAsync()
+        {
+            try
+            {
+                string json = await ApiClient.GetAsync(SavePath, withAuth: true);
+
+                if (string.IsNullOrWhiteSpace(json))
+                    return null;
+
+                SavesData data = JsonUtility.FromJson<SavesData>(json);
+
+                if (data != null)
+                    data.EnsureValid();
+
+                return data;
+            }
+            catch (ApiException exception) when (exception.StatusCode == 404)
+            {
+                return null;
+            }
+        }
+
+        public static async Task SaveAsync(SavesData data)
+        {
+            data.EnsureValid();
+
+            string json = JsonUtility.ToJson(data);
+            await ApiClient.PutJsonAsync(SavePath, json, withAuth: true);
         }
     }
 
@@ -128,6 +262,9 @@ namespace YG
 
         public static SavesData Load()
         {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            return SavesData.CreateDefault();
+#else
             if (!File.Exists(SavePath))
                 return SavesData.CreateDefault();
 
@@ -169,10 +306,14 @@ namespace YG
                 Debug.LogWarning("Failed to load local save. Default values will be used. " + exception.Message);
                 return SavesData.CreateDefault();
             }
+#endif
         }
 
         public static void Save(SavesData data)
         {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            return;
+#else
             try
             {
                 Directory.CreateDirectory(Application.persistentDataPath);
@@ -203,6 +344,7 @@ namespace YG
             {
                 Debug.LogWarning("Failed to save local data. " + exception.Message);
             }
+#endif
         }
 
         private static int[] ReadIntArray(BinaryReader reader, int expectedLength)

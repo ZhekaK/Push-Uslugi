@@ -26,6 +26,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_GovCalculator/Scenes/GovCalculator.unity
     guid: b46a38e5c67c4d70b8f8fe02e0d9a551
+  - enabled: 1
+    path: Assets/_CalendarEvents/CalendarScene.unity
+    guid: 864a4dc4a5a71b347bfd943bb21d4d26
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

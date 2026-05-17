@@ -18,6 +18,7 @@ namespace PushPelmesh.App.Auth
             var response = JsonUtility.FromJson<AuthResponse>(responseJson);
 
             TokenStorage.SaveToken(response.token);
+            SessionManager.userRole = null;
 
             return response;
         }
@@ -39,6 +40,7 @@ namespace PushPelmesh.App.Auth
             var response = JsonUtility.FromJson<AuthResponse>(responseJson);
 
             TokenStorage.SaveToken(response.token);
+            SessionManager.userRole = null;
 
             return response;
         }

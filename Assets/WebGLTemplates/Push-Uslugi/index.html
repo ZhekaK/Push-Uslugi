@@ -172,14 +172,6 @@
       container.style.height = `${size.height}px`;
       canvas.style.width = "100%";
       canvas.style.height = "100%";
-
-      if (unityInstance && unityInstance.Module && typeof unityInstance.Module.setCanvasSize === "function") {
-        const rect = canvas.getBoundingClientRect();
-        unityInstance.Module.setCanvasSize(
-          Math.max(1, Math.floor(rect.width)),
-          Math.max(1, Math.floor(rect.height))
-        );
-      }
     }
 
     function resizeUnityContainer() {

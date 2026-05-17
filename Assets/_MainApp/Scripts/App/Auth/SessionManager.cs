@@ -45,6 +45,7 @@ namespace PushPelmesh.App.Auth
         public static void Logout()
         {
             CurrentProfile = null;
+            userRole = null;
 
             TokenStorage.ClearToken();
         }

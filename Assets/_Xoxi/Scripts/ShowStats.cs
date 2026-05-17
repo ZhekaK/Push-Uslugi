@@ -13,6 +13,17 @@ public class ShowStats : MonoBehaviour
 
     private void OnEnable()
     {
+        Saver.ProgressLoaded += Refresh;
+        Refresh();
+    }
+
+    private void OnDisable()
+    {
+        Saver.ProgressLoaded -= Refresh;
+    }
+
+    private void Refresh()
+    {
         for (int i = 0; i < blocks.Length; i++)
         {
             blocks[i].gamesAll.text = Saver.saves.gamesAll[i].ToString();
