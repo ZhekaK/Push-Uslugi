@@ -1,16 +1,10 @@
 fileFormatVersion: 2
-guid: b04b0bd4f5e9531438815dd0cc1f29ce
+guid: 1f9e34820f9ca034cb0e1ed2628f08e9
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 5390781785914689683
-    second: favicon_0
-  - first:
-      213: 7942534062534188515
-    second: favicon_1
-  - first:
-      213: -5826780378955797781
-    second: favicon_2
+      213: -2191989549806839966
+    second: Email_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -132,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: favicon_0
+      name: Email_0
       rect:
         serializedVersion: 2
-        x: 84
-        y: 651
-        width: 184
-        height: 204
+        x: 0
+        y: 12
+        width: 256
+        height: 232
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -147,52 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 39847130977efca40800000000000000
-      internalID: 5390781785914689683
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: favicon_1
-      rect:
-        serializedVersion: 2
-        x: 95
-        y: 0
-        width: 1103
-        height: 1254
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 3ed5ac506ac893e60800000000000000
-      internalID: 7942534062534188515
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: favicon_2
-      rect:
-        serializedVersion: 2
-        x: 73
-        y: 392
-        width: 185
-        height: 204
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: beaaf10fd1e132fa0800000000000000
-      internalID: -5826780378955797781
+      spriteID: 267156c3e1d7491e0800000000000000
+      internalID: -2191989549806839966
       vertices: []
       indices: 
       edges: []
@@ -211,9 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      favicon_0: 5390781785914689683
-      favicon_1: 7942534062534188515
-      favicon_2: -5826780378955797781
+      Email_0: -2191989549806839966
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -1,0 +1,21 @@
+{
+  "name": "\u041f\u044b\u0448-\u0423\u0441\u043b\u0443\u0433\u0438",
+  "short_name": "\u041f\u044b\u0448",
+  "start_url": ".",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#e5e5e5",
+  "theme_color": "#005cb9",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

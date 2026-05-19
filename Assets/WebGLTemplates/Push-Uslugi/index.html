@@ -4,9 +4,10 @@
   <meta charset="utf-8">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no, interactive-widget=resizes-content">
-  <meta name="theme-color" content="#e5e5e5">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#005cb9">
 
-  <title>{{{ PRODUCT_NAME }}}</title>
+  <title>Пыш-Услуги</title>
   <link rel="icon" type="image/png" href="favicon.png">
 
   <style>
@@ -132,7 +133,7 @@
 
 <body>
   <div id="loading-screen">
-    <img id="loading-logo" src="favicon.png" alt="{{{ PRODUCT_NAME }}}">
+    <img id="loading-logo" src="favicon.png" alt="Push-Uslugi">
     <div id="loading-spinner"></div>
   </div>
 
@@ -250,18 +251,18 @@
     canvas.addEventListener("contextmenu", (event) => event.preventDefault());
   </script>
 
-  <script src="Build/{{{ LOADER_FILENAME }}}"></script>
+  <script src="Build/Push-Uslugi.loader.js"></script>
 
   <script>
     createUnityInstance(canvas, {
       arguments: [],
-      dataUrl: "Build/{{{ DATA_FILENAME }}}",
-      frameworkUrl: "Build/{{{ FRAMEWORK_FILENAME }}}",
-      codeUrl: "Build/{{{ CODE_FILENAME }}}",
+      dataUrl: "Build/Push-Uslugi.data.br",
+      frameworkUrl: "Build/Push-Uslugi.framework.js.br",
+      codeUrl: "Build/Push-Uslugi.wasm.br",
       streamingAssetsUrl: "StreamingAssets",
-      companyName: "{{{ COMPANY_NAME }}}",
-      productName: "{{{ PRODUCT_NAME }}}",
-      productVersion: "{{{ PRODUCT_VERSION }}}",
+      companyName: "Kartofan Studio",
+      productName: "Push-Uslugi",
+      productVersion: "1.0.0",
       matchWebGLToCanvasSize: true
     }).then((instance) => {
       unityInstance = instance;
