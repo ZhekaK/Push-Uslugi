@@ -34,7 +34,7 @@ var PushUslugiWebPushBridge = {
         Endpoint: subscription.endpoint,
         P256dh: keys.p256dh || "",
         Auth: keys.auth || "",
-        Platform: "WebGL"
+        Platform: 0
       };
     },
 
@@ -103,16 +103,23 @@ var PushUslugiWebPushBridge = {
         });
       }
 
+      const subscribeUrl = PushUslugiWebPushBridge.buildApiUrl(apiBaseUrl, PushUslugiWebPushBridge.subscribePath);
+      const subscribePayload = PushUslugiWebPushBridge.subscriptionToServerPayload(subscription);
+
+      console.log("WebPush subscribe request:", subscribeUrl, subscribePayload);
+
       const response = await fetch(
-        PushUslugiWebPushBridge.buildApiUrl(apiBaseUrl, PushUslugiWebPushBridge.subscribePath),
+        subscribeUrl,
         {
         method: "POST",
         headers: {
           "Authorization": "Bearer " + jwt,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(PushUslugiWebPushBridge.subscriptionToServerPayload(subscription))
+        body: JSON.stringify(subscribePayload)
         });
+
+      console.log("WebPush subscribe response:", response.status, response.statusText);
 
       if (!response.ok) {
         const responseBody = await response.text();

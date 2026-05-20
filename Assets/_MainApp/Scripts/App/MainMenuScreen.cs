@@ -74,6 +74,7 @@ namespace PushPelmesh.App.MainMenu
         [SerializeField] private string loginSceneName = "LoginScene";
 
         private bool canUseNotifications;
+        private bool notificationRequestInProgress;
 
         private void Awake()
         {
@@ -100,7 +101,10 @@ namespace PushPelmesh.App.MainMenu
             canUseNotifications = !isGuest;
 
             if (!canUseNotifications)
+            {
+                notificationRequestInProgress = false;
                 SetNotificationButtonsVisible(false, false);
+            }
 
             foreach (ServiceModule serviceModule in serviceModules)
             {
@@ -125,27 +129,43 @@ namespace PushPelmesh.App.MainMenu
 
         public void EnableNotifications()
         {
-            if (!canUseNotifications)
+            if (!TryBeginNotificationRequest())
                 return;
 
+#if UNITY_WEBGL && !UNITY_EDITOR
             WebPushService.Register(gameObject.name, nameof(OnPushSubscriptionStateChanged));
+#else
+            notificationRequestInProgress = false;
+            SetNotificationButtonsVisible(true, false);
+            WebPushService.Register(gameObject.name, nameof(OnPushSubscriptionStateChanged));
+#endif
         }
 
         public void DisableNotifications()
         {
-            if (!canUseNotifications)
+            if (!TryBeginNotificationRequest())
                 return;
 
+#if UNITY_WEBGL && !UNITY_EDITOR
             WebPushService.RequestSubscriptionEndpoint(
                 gameObject.name,
                 nameof(OnPushUnsubscribeEndpointReceived),
-                nameof(OnPushSubscriptionStateChanged));
+                string.Empty);
+#else
+            notificationRequestInProgress = false;
+            SetNotificationButtonsVisible(false, true);
+            WebPushService.RequestSubscriptionEndpoint(
+                gameObject.name,
+                nameof(OnPushUnsubscribeEndpointReceived),
+                string.Empty);
+#endif
         }
 
         public void RefreshNotificationButtons()
         {
             if (!canUseNotifications)
             {
+                notificationRequestInProgress = false;
                 SetNotificationButtonsVisible(false, false);
                 return;
             }
@@ -159,6 +179,8 @@ namespace PushPelmesh.App.MainMenu
 
         public void OnPushSubscriptionStateChanged(string isSubscribedText)
         {
+            notificationRequestInProgress = false;
+
             if (!canUseNotifications)
             {
                 SetNotificationButtonsVisible(false, false);
@@ -188,6 +210,7 @@ namespace PushPelmesh.App.MainMenu
             catch (Exception exception)
             {
                 Debug.LogError(exception);
+                notificationRequestInProgress = false;
                 RefreshNotificationButtons();
             }
         }
@@ -221,10 +244,35 @@ namespace PushPelmesh.App.MainMenu
         private void SetNotificationButtonsVisible(bool showEnableButton, bool showDisableButton)
         {
             if (enableNotificationsButton != null)
+            {
                 enableNotificationsButton.gameObject.SetActive(showEnableButton);
+                enableNotificationsButton.interactable = showEnableButton && !notificationRequestInProgress;
+            }
 
             if (disableNotificationsButton != null)
+            {
                 disableNotificationsButton.gameObject.SetActive(showDisableButton);
+                disableNotificationsButton.interactable = showDisableButton && !notificationRequestInProgress;
+            }
+        }
+
+        private bool TryBeginNotificationRequest()
+        {
+            if (!canUseNotifications || notificationRequestInProgress)
+                return false;
+
+            notificationRequestInProgress = true;
+            SetNotificationButtonsInteractable(false);
+            return true;
+        }
+
+        private void SetNotificationButtonsInteractable(bool interactable)
+        {
+            if (enableNotificationsButton != null)
+                enableNotificationsButton.interactable = interactable && enableNotificationsButton.gameObject.activeSelf;
+
+            if (disableNotificationsButton != null)
+                disableNotificationsButton.interactable = interactable && disableNotificationsButton.gameObject.activeSelf;
         }
 
         private void OnLogoutClicked()
