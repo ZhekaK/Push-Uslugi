@@ -151,8 +151,8 @@ RectTransform:
   - {fileID: 2027876148}
   - {fileID: 1512869563}
   - {fileID: 492894085}
-  - {fileID: 1690259191}
   - {fileID: 669306657}
+  - {fileID: 1690259191}
   m_Father: {fileID: 747969628}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -3587,13 +3587,13 @@ MonoBehaviour:
     ModuleKey: CalendarScene
     NotificationIcon: {fileID: 812083559}
     GuestAvailable: 1
-  - Button: {fileID: 1092241783}
-    SceneName: CalendarScene
+  - Button: {fileID: 1690185018}
+    SceneName: CinemaScene
     ModuleKey: 
     NotificationIcon: {fileID: 0}
     GuestAvailable: 1
-  - Button: {fileID: 1092241783}
-    SceneName: CalendarScene
+  - Button: {fileID: 1499573665}
+    SceneName: RewardScene
     ModuleKey: 
     NotificationIcon: {fileID: 0}
     GuestAvailable: 1

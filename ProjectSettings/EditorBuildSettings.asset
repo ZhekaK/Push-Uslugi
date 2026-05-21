@@ -29,6 +29,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_CalendarEvents/CalendarScene.unity
     guid: 864a4dc4a5a71b347bfd943bb21d4d26
+  - enabled: 1
+    path: Assets/_RewardModule/Scenes/RewardScene.unity
+    guid: f4ed9784173bbca498523581c9c569b0
+  - enabled: 1
+    path: Assets/_CinemaModule/Scenes/CinemaScene.unity
+    guid: 20aa61f51efc8ac42a220525e2537cbd
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0
