@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using PushPelmesh.App.Auth;
 using PushPelmesh.App.Models;
+using PushPelmesh.App.Notifications;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -60,6 +62,8 @@ namespace PushPelmesh.App.MainMenu
         {
             public Button Button;
             public string SceneName;
+            public string ModuleKey;
+            public Image NotificationIcon;
             public bool GuestAvailable;
         }
         [Header("UI")]
@@ -69,6 +73,7 @@ namespace PushPelmesh.App.MainMenu
         [SerializeField] private Button profileButton;
         [SerializeField] private Button enableNotificationsButton;
         [SerializeField] private Button disableNotificationsButton;
+        [SerializeField] private float moduleNotificationRefreshInterval = 60f;
 
         [Header("Navigation")]
         [SerializeField] private string loginSceneName = "LoginScene";
@@ -82,7 +87,11 @@ namespace PushPelmesh.App.MainMenu
             logoutButton.onClick.AddListener(OnLogoutClicked);
             foreach (ServiceModule serviceModule in serviceModules)
             {
-                serviceModule.Button.onClick.AddListener(() => OnServiceButtonClicked(serviceModule.SceneName));
+                ServiceModule module = serviceModule;
+                SetModuleNotificationIcon(module, false);
+
+                if (module.Button != null)
+                    module.Button.onClick.AddListener(() => OnServiceButtonClicked(module));
             }
         }
 
@@ -104,27 +113,39 @@ namespace PushPelmesh.App.MainMenu
             {
                 notificationRequestInProgress = false;
                 SetNotificationButtonsVisible(false, false);
+                StopModuleNotificationsPolling();
             }
 
             foreach (ServiceModule serviceModule in serviceModules)
             {
                 if (serviceModule.Button != null)
                     serviceModule.Button.interactable = !isGuest || serviceModule.GuestAvailable;
+
+                if (isGuest)
+                    SetModuleNotificationIcon(serviceModule, false);
             }
         }
 
         private void OnDestroy()
         {
+            StopModuleNotificationsPolling();
+
             logoutButton.onClick.RemoveListener(OnLogoutClicked);
             foreach (ServiceModule serviceModule in serviceModules)
             {
-                serviceModule.Button.onClick.RemoveAllListeners();
+                if (serviceModule.Button != null)
+                    serviceModule.Button.onClick.RemoveAllListeners();
             }
         }
 
-        private void OnServiceButtonClicked(string sceneName)
+        private void OnServiceButtonClicked(ServiceModule module)
         {
-            SceneManager.LoadScene(sceneName);
+            if (module == null || string.IsNullOrWhiteSpace(module.SceneName))
+                return;
+
+            SetModuleNotificationIcon(module, false);
+            MarkModuleNotificationsRead(module);
+            SceneManager.LoadScene(module.SceneName);
         }
 
         public void EnableNotifications()
@@ -232,6 +253,7 @@ namespace PushPelmesh.App.MainMenu
 
                 ApplyAccess(profile);
                 RefreshNotificationButtons();
+                RestartModuleNotificationsPolling();
             }
             catch (Exception exception)
             {
@@ -254,6 +276,100 @@ namespace PushPelmesh.App.MainMenu
                 disableNotificationsButton.gameObject.SetActive(showDisableButton);
                 disableNotificationsButton.interactable = showDisableButton && !notificationRequestInProgress;
             }
+        }
+
+        private async void RefreshModuleNotifications()
+        {
+            if (!TokenStorage.HasToken())
+            {
+                SetAllModuleNotificationIcons(false);
+                return;
+            }
+
+            try
+            {
+                ModuleNotificationsResponse response = await ModuleNotificationsApi.GetUnreadAsync();
+                HashSet<string> unreadModuleKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                if (response != null && response.notifications != null)
+                {
+                    for (int i = 0; i < response.notifications.Count; i++)
+                    {
+                        ModuleNotificationDto notification = response.notifications[i];
+
+                        if (notification != null && !string.IsNullOrWhiteSpace(notification.moduleKey))
+                            unreadModuleKeys.Add(notification.moduleKey);
+                    }
+                }
+
+                foreach (ServiceModule serviceModule in serviceModules)
+                    SetModuleNotificationIcon(serviceModule, unreadModuleKeys.Contains(GetModuleKey(serviceModule)));
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError(exception);
+            }
+        }
+
+        private void RestartModuleNotificationsPolling()
+        {
+            StopModuleNotificationsPolling();
+
+            if (!canUseNotifications || !TokenStorage.HasToken())
+            {
+                SetAllModuleNotificationIcons(false);
+                return;
+            }
+
+            RefreshModuleNotifications();
+
+            if (moduleNotificationRefreshInterval > 0f)
+                InvokeRepeating(nameof(RefreshModuleNotifications), moduleNotificationRefreshInterval, moduleNotificationRefreshInterval);
+        }
+
+        private void StopModuleNotificationsPolling()
+        {
+            CancelInvoke(nameof(RefreshModuleNotifications));
+        }
+
+        private async void MarkModuleNotificationsRead(ServiceModule module)
+        {
+            string moduleKey = GetModuleKey(module);
+
+            if (string.IsNullOrWhiteSpace(moduleKey) || !TokenStorage.HasToken())
+                return;
+
+            try
+            {
+                await ModuleNotificationsApi.MarkReadAsync(moduleKey);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError(exception);
+            }
+        }
+
+        private void SetAllModuleNotificationIcons(bool visible)
+        {
+            foreach (ServiceModule serviceModule in serviceModules)
+                SetModuleNotificationIcon(serviceModule, visible);
+        }
+
+        private static void SetModuleNotificationIcon(ServiceModule module, bool visible)
+        {
+            if (module != null && module.NotificationIcon != null)
+                module.NotificationIcon.gameObject.SetActive(visible);
+        }
+
+        private static string GetModuleKey(ServiceModule module)
+        {
+            if (module == null)
+                return string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(module.ModuleKey))
+                return module.ModuleKey.Trim();
+
+            return string.IsNullOrWhiteSpace(module.SceneName) ? string.Empty : module.SceneName.Trim();
         }
 
         private bool TryBeginNotificationRequest()

@@ -3569,19 +3569,38 @@ MonoBehaviour:
   serviceModules:
   - Button: {fileID: 819564637}
     SceneName: MenuXoxi
+    ModuleKey: 
+    NotificationIcon: {fileID: 0}
     GuestAvailable: 1
   - Button: {fileID: 419404832}
     SceneName: Alcometr
+    ModuleKey: 
+    NotificationIcon: {fileID: 0}
     GuestAvailable: 0
   - Button: {fileID: 1613479036}
     SceneName: GovCalculator
+    ModuleKey: 
+    NotificationIcon: {fileID: 0}
     GuestAvailable: 1
   - Button: {fileID: 1092241783}
     SceneName: CalendarScene
+    ModuleKey: CalendarScene
+    NotificationIcon: {fileID: 812083559}
+    GuestAvailable: 1
+  - Button: {fileID: 1092241783}
+    SceneName: CalendarScene
+    ModuleKey: 
+    NotificationIcon: {fileID: 0}
+    GuestAvailable: 1
+  - Button: {fileID: 1092241783}
+    SceneName: CalendarScene
+    ModuleKey: 
+    NotificationIcon: {fileID: 0}
     GuestAvailable: 1
   profileButton: {fileID: 2027876149}
   enableNotificationsButton: {fileID: 1443418377}
   disableNotificationsButton: {fileID: 39967601}
+  moduleNotificationRefreshInterval: 60
   loginSceneName: LoginScene
 --- !u!1 &752091186
 GameObject:
@@ -6949,6 +6968,7 @@ GameObject:
   - component: {fileID: 1473775120}
   - component: {fileID: 1473775119}
   - component: {fileID: 1473775118}
+  - component: {fileID: 1473775121}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -7030,6 +7050,50 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1473775121
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1473775117}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalCameraData
+  m_RenderShadows: 1
+  m_RequiresDepthTextureOption: 2
+  m_RequiresOpaqueTextureOption: 2
+  m_CameraType: 0
+  m_Cameras: []
+  m_RendererIndex: -1
+  m_VolumeLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  m_VolumeTrigger: {fileID: 0}
+  m_VolumeFrameworkUpdateModeOption: 2
+  m_RenderPostProcessing: 0
+  m_Antialiasing: 0
+  m_AntialiasingQuality: 2
+  m_StopNaN: 0
+  m_Dithering: 0
+  m_ClearDepth: 1
+  m_AllowXRRendering: 1
+  m_AllowHDROutput: 1
+  m_UseScreenCoordOverride: 0
+  m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_ScreenCoordScaleBias: {x: 0, y: 0, z: 0, w: 0}
+  m_RequiresDepthTexture: 0
+  m_RequiresColorTexture: 0
+  m_TaaSettings:
+    m_Quality: 3
+    m_FrameInfluence: 0.1
+    m_JitterScale: 1
+    m_MipBias: 0
+    m_VarianceClampScale: 0.9
+    m_ContrastAdaptiveSharpening: 0
+  m_Version: 2
 --- !u!1 &1499573663
 GameObject:
   m_ObjectHideFlags: 0
@@ -7109,7 +7173,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 0
+  m_Interactable: 1
   m_TargetGraphic: {fileID: 1499573666}
   m_OnClick:
     m_PersistentCalls:
@@ -8554,7 +8618,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 0
+  m_Interactable: 1
   m_TargetGraphic: {fileID: 1690185019}
   m_OnClick:
     m_PersistentCalls:
