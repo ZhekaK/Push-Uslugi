@@ -19,6 +19,7 @@ namespace PushPelmesh.RewardModule
         public string eventType;
         public string eventName;
         public string place;
+        public string date;
         public string createdAt;
     }
 }

@@ -111,6 +111,7 @@ namespace PushPelmesh.CinemaModule
             try
             {
                 List<CinemaMovieDto> movies = await CinemaApi.GetMoviesAsync();
+                movies.Sort((left, right) => right.rating.CompareTo(left.rating));
                 RenderMovies(movies);
                 SetStatus(movies.Count == 0 ? "Фильмов пока нет" : "Загружено фильмов: " + movies.Count);
             }

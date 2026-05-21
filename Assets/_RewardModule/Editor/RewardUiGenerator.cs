@@ -39,7 +39,7 @@ namespace PushPelmesh.RewardModule.EditorTools
             GameObject existingCanvas = GameObject.Find(CanvasName);
             if (existingCanvas != null)
             {
-                bool replace = EditorUtility.DisplayDialog(
+                bool replace = Application.isBatchMode || EditorUtility.DisplayDialog(
                     "Reward UI",
                     "В текущей сцене уже есть RewardCanvas. Заменить его новым интерфейсом?",
                     "Заменить",
@@ -56,6 +56,7 @@ namespace PushPelmesh.RewardModule.EditorTools
 
             Canvas canvas = CreateCanvas();
             RectTransform root = CreateRoot(canvas.transform);
+
             RectTransform header = CreateHorizontal(root, "Header", 92f, 16f, TextAnchor.MiddleCenter);
             Button backButton = CreateButton(header, "В меню", font, new Color(0.34f, 0.4f, 0.48f), 160f);
             Text title = CreateText(header, "Награды", font, 40, FontStyle.Bold, new Color(0.08f, 0.1f, 0.14f), TextAnchor.MiddleCenter);
@@ -70,12 +71,12 @@ namespace PushPelmesh.RewardModule.EditorTools
 
             RectTransform headerRow = CreateHorizontal(root, "TableHeader", 58f, 2f, TextAnchor.MiddleCenter);
             Text firstHeader = CreateHeaderCell(headerRow, "ФИО", font);
-            Text secondHeader = CreateHeaderCell(headerRow, "Название события", font);
-            Text thirdHeader = CreateHeaderCell(headerRow, "Место", font);
+            Text secondHeader = CreateHeaderCell(headerRow, "Дата", font);
+            Text thirdHeader = CreateHeaderCell(headerRow, "Название события", font);
+            Text fourthHeader = CreateHeaderCell(headerRow, "Место", font);
 
-            ScrollRect scrollRect = CreateScroll(root, font, out RectTransform rowsRoot);
+            CreateScroll(root, out RectTransform rowsRoot);
             GameObject rowPrefab = CreateRowTemplate(canvas.transform, font);
-
             Text statusText = CreateTextBlock(root, string.Empty, font, 22, FontStyle.Italic, new Color(0.36f, 0.42f, 0.48f), 48f);
 
             EnsureEventSystem();
@@ -90,6 +91,7 @@ namespace PushPelmesh.RewardModule.EditorTools
                 firstHeader,
                 secondHeader,
                 thirdHeader,
+                fourthHeader,
                 statusText,
                 rowsRoot,
                 rowPrefab);
@@ -172,7 +174,7 @@ namespace PushPelmesh.RewardModule.EditorTools
             return rect;
         }
 
-        private static ScrollRect CreateScroll(RectTransform parent, Font font, out RectTransform content)
+        private static void CreateScroll(RectTransform parent, out RectTransform content)
         {
             RectTransform scroll = CreateRect("TableScroll", parent);
             AddLayout(scroll.gameObject, 0f, 0f, 0f, 1f);
@@ -189,8 +191,7 @@ namespace PushPelmesh.RewardModule.EditorTools
             viewport.offsetMin = Vector2.zero;
             viewport.offsetMax = Vector2.zero;
             viewport.gameObject.AddComponent<Mask>().showMaskGraphic = false;
-            Image viewportImage = viewport.gameObject.AddComponent<Image>();
-            viewportImage.color = Color.white;
+            viewport.gameObject.AddComponent<Image>().color = Color.white;
 
             content = CreateRect("Rows", viewport);
             content.anchorMin = new Vector2(0f, 1f);
@@ -211,8 +212,6 @@ namespace PushPelmesh.RewardModule.EditorTools
 
             scrollRect.viewport = viewport;
             scrollRect.content = content;
-
-            return scrollRect;
         }
 
         private static GameObject CreateRowTemplate(Transform parent, Font font)
@@ -232,14 +231,16 @@ namespace PushPelmesh.RewardModule.EditorTools
             layout.childForceExpandHeight = true;
 
             Text first = CreateCell(row, "ФИО", font);
-            Text second = CreateCell(row, "Событие", font);
-            Text third = CreateCell(row, "Место", font);
+            Text second = CreateCell(row, "Дата", font);
+            Text third = CreateCell(row, "Событие", font);
+            Text fourth = CreateCell(row, "Место", font);
 
             RewardRowView rowView = row.gameObject.AddComponent<RewardRowView>();
             SerializedObject serializedRow = new SerializedObject(rowView);
             SetReference(serializedRow, "firstColumnText", first);
             SetReference(serializedRow, "secondColumnText", second);
             SetReference(serializedRow, "thirdColumnText", third);
+            SetReference(serializedRow, "fourthColumnText", fourth);
             serializedRow.ApplyModifiedProperties();
 
             return row.gameObject;
@@ -369,6 +370,7 @@ namespace PushPelmesh.RewardModule.EditorTools
             Text firstHeader,
             Text secondHeader,
             Text thirdHeader,
+            Text fourthHeader,
             Text statusText,
             RectTransform rowsRoot,
             GameObject rowPrefab)
@@ -383,6 +385,7 @@ namespace PushPelmesh.RewardModule.EditorTools
             SetReference(serializedScreen, "firstHeaderText", firstHeader);
             SetReference(serializedScreen, "secondHeaderText", secondHeader);
             SetReference(serializedScreen, "thirdHeaderText", thirdHeader);
+            SetReference(serializedScreen, "fourthHeaderText", fourthHeader);
             SetReference(serializedScreen, "statusText", statusText);
             SetReference(serializedScreen, "rowsRoot", rowsRoot);
             SetReference(serializedScreen, "rowPrefab", rowPrefab);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using PushPelmesh.App;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -30,6 +31,7 @@ namespace PushPelmesh.RewardModule
         [SerializeField] private Text firstHeaderText;
         [SerializeField] private Text secondHeaderText;
         [SerializeField] private Text thirdHeaderText;
+        [SerializeField] private Text fourthHeaderText;
         [SerializeField] private Text statusText;
         [SerializeField] private Transform rowsRoot;
         [SerializeField] private GameObject rowPrefab;
@@ -81,9 +83,11 @@ namespace PushPelmesh.RewardModule
             {
                 championships.Clear();
                 championships.AddRange(await RewardApi.GetChampionshipsAsync());
+                championships.Sort(CompareByDateDescending);
 
                 governmentAwards.Clear();
                 governmentAwards.AddRange(await RewardApi.GetGovernmentAwardsAsync());
+                governmentAwards.Sort(CompareByDateDescending);
 
                 RenderCurrentTab();
             }
@@ -120,10 +124,13 @@ namespace PushPelmesh.RewardModule
                 firstHeaderText.text = "ФИО";
 
             if (secondHeaderText != null)
-                secondHeaderText.text = showChampionships ? "Название события" : "Тип события";
+                secondHeaderText.text = "Дата";
 
             if (thirdHeaderText != null)
-                thirdHeaderText.text = showChampionships ? "Место" : "Название события";
+                thirdHeaderText.text = showChampionships ? "Название события" : "Тип события";
+
+            if (fourthHeaderText != null)
+                fourthHeaderText.text = showChampionships ? "Место" : "Название события";
 
             for (int i = 0; i < source.Count; i++)
             {
@@ -135,6 +142,7 @@ namespace PushPelmesh.RewardModule
 
                 row.Setup(
                     record.fullName,
+                    FormatDate(record.date),
                     showChampionships ? record.eventName : record.eventType,
                     showChampionships ? record.place : record.eventName);
             }
@@ -180,6 +188,34 @@ namespace PushPelmesh.RewardModule
         {
             if (statusText != null)
                 statusText.text = message;
+        }
+
+        private static int CompareByDateDescending(RewardRecordDto left, RewardRecordDto right)
+        {
+            DateTime leftDate = ParseDateOrMin(left != null ? left.date : null);
+            DateTime rightDate = ParseDateOrMin(right != null ? right.date : null);
+            int dateCompare = rightDate.CompareTo(leftDate);
+
+            if (dateCompare != 0)
+                return dateCompare;
+
+            int leftId = left != null ? left.id : 0;
+            int rightId = right != null ? right.id : 0;
+            return rightId.CompareTo(leftId);
+        }
+
+        private static DateTime ParseDateOrMin(string value)
+        {
+            if (DateTime.TryParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
+                return date.Date;
+
+            return DateTime.MinValue;
+        }
+
+        private static string FormatDate(string value)
+        {
+            DateTime date = ParseDateOrMin(value);
+            return date == DateTime.MinValue ? value : date.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture);
         }
 
         private void BackToMainMenu()

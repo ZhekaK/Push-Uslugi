@@ -8,8 +8,9 @@ namespace PushPelmesh.RewardModule
         [SerializeField] private Text firstColumnText;
         [SerializeField] private Text secondColumnText;
         [SerializeField] private Text thirdColumnText;
+        [SerializeField] private Text fourthColumnText;
 
-        public void Setup(string firstColumn, string secondColumn, string thirdColumn)
+        public void Setup(string firstColumn, string secondColumn, string thirdColumn, string fourthColumn)
         {
             if (firstColumnText != null)
                 firstColumnText.text = string.IsNullOrWhiteSpace(firstColumn) ? "-" : firstColumn;
@@ -19,6 +20,9 @@ namespace PushPelmesh.RewardModule
 
             if (thirdColumnText != null)
                 thirdColumnText.text = string.IsNullOrWhiteSpace(thirdColumn) ? "-" : thirdColumn;
+
+            if (fourthColumnText != null)
+                fourthColumnText.text = string.IsNullOrWhiteSpace(fourthColumn) ? "-" : fourthColumn;
         }
     }
 }
