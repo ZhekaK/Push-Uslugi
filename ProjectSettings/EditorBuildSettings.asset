@@ -35,6 +35,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_CinemaModule/Scenes/CinemaScene.unity
     guid: 20aa61f51efc8ac42a220525e2537cbd
+  - enabled: 1
+    path: Assets/_VoteModule/Scenes/VoteScene.unity
+    guid: dd17e9782b3d90d458febafba3c2e8b7
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

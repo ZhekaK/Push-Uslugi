@@ -3597,6 +3597,11 @@ MonoBehaviour:
     ModuleKey: 
     NotificationIcon: {fileID: 0}
     GuestAvailable: 1
+  - Button: {fileID: 1011820876}
+    SceneName: VoteScene
+    ModuleKey: VoteModule
+    NotificationIcon: {fileID: 858984540}
+    GuestAvailable: 0
   profileButton: {fileID: 2027876149}
   enableNotificationsButton: {fileID: 1443418377}
   disableNotificationsButton: {fileID: 39967601}
@@ -5355,7 +5360,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 0
+  m_Interactable: 1
   m_TargetGraphic: {fileID: 1011820877}
   m_OnClick:
     m_PersistentCalls:
