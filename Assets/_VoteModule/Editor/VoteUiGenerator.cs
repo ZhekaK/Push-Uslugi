@@ -80,6 +80,8 @@ namespace PushPelmesh.VoteModule.EditorTools
             Text detailsDescription = CreateTextBlock(detailsPanel.GetComponent<RectTransform>(), string.Empty, font, 22, FontStyle.Normal, new Color(0.16f, 0.18f, 0.22f), 96f);
             Text detailsMeta = CreateTextBlock(detailsPanel.GetComponent<RectTransform>(), string.Empty, font, 19, FontStyle.Italic, new Color(0.34f, 0.4f, 0.48f), 42f);
             CreateScroll(detailsPanel.GetComponent<RectTransform>(), "OptionsScroll", out RectTransform optionsRoot);
+            Button submitVoteButton = CreateButton(detailsPanel.GetComponent<RectTransform>(), "Проголосовать", font, new Color(0.12f, 0.58f, 0.32f), 0f);
+            submitVoteButton.gameObject.SetActive(false);
             Text detailsStatus = CreateTextBlock(detailsPanel.GetComponent<RectTransform>(), string.Empty, font, 20, FontStyle.Italic, new Color(0.36f, 0.42f, 0.48f), 44f);
 
             GameObject createPanel = CreatePanel(root, "CreatePanel");
@@ -90,6 +92,12 @@ namespace PushPelmesh.VoteModule.EditorTools
             InputField titleInput = CreateInput(createPanel.GetComponent<RectTransform>(), "TitleInput", "Название", font, 58f);
             InputField descriptionInput = CreateInput(createPanel.GetComponent<RectTransform>(), "DescriptionInput", "Описание", font, 86f);
             InputField endDateInput = CreateInput(createPanel.GetComponent<RectTransform>(), "EndDateInput", "Дата окончания yyyy-MM-dd", font, 58f);
+
+            RectTransform modeRow = CreateHorizontal(createPanel.GetComponent<RectTransform>(), "VoteModeRow", 54f, 16f, TextAnchor.MiddleLeft);
+            Text modeLabel = CreateText(modeRow, "Тип голосования:", font, 21, FontStyle.Bold, new Color(0.1f, 0.12f, 0.16f), TextAnchor.MiddleLeft);
+            AddLayout(modeLabel.gameObject, 210f, 48f, 0f);
+            Toggle multipleChoiceToggle = CreateToggle(modeRow, "Можно выбрать несколько вариантов", font);
+            multipleChoiceToggle.isOn = false;
 
             CreateScroll(createPanel.GetComponent<RectTransform>(), "OptionInputsScroll", out RectTransform optionsBlock, 190f, 0f);
             GameObject optionInputRowPrefab = CreateOptionInputRowTemplate(createPanel.transform, font);
@@ -126,6 +134,7 @@ namespace PushPelmesh.VoteModule.EditorTools
                 detailsDescription,
                 detailsMeta,
                 detailsStatus,
+                submitVoteButton,
                 optionsRoot,
                 optionPrefab,
                 createPanel,
@@ -134,6 +143,7 @@ namespace PushPelmesh.VoteModule.EditorTools
                 titleInput,
                 descriptionInput,
                 endDateInput,
+                multipleChoiceToggle,
                 optionsBlock,
                 optionInputRowPrefab,
                 addOptionButton,
@@ -486,6 +496,7 @@ namespace PushPelmesh.VoteModule.EditorTools
             Text detailsDescription,
             Text detailsMeta,
             Text detailsStatus,
+            Button submitVoteButton,
             RectTransform optionsRoot,
             GameObject optionPrefab,
             GameObject createPanel,
@@ -494,6 +505,7 @@ namespace PushPelmesh.VoteModule.EditorTools
             InputField titleInput,
             InputField descriptionInput,
             InputField endDateInput,
+            Toggle multipleChoiceToggle,
             RectTransform optionInputsRoot,
             GameObject optionInputRowPrefab,
             Button addOptionButton,
@@ -517,6 +529,7 @@ namespace PushPelmesh.VoteModule.EditorTools
             SetReference(so, "detailsDescriptionText", detailsDescription);
             SetReference(so, "detailsMetaText", detailsMeta);
             SetReference(so, "detailsStatusText", detailsStatus);
+            SetReference(so, "submitVoteButton", submitVoteButton);
             SetReference(so, "optionsRoot", optionsRoot);
             SetReference(so, "optionPrefab", optionPrefab);
             SetReference(so, "createPanel", createPanel);
@@ -525,6 +538,7 @@ namespace PushPelmesh.VoteModule.EditorTools
             SetReference(so, "titleInput", titleInput);
             SetReference(so, "descriptionInput", descriptionInput);
             SetReference(so, "endDateInput", endDateInput);
+            SetReference(so, "multipleChoiceToggle", multipleChoiceToggle);
             SetReference(so, "optionInputsRoot", optionInputsRoot);
             SetReference(so, "optionInputRowPrefab", optionInputRowPrefab);
             SetReference(so, "addOptionButton", addOptionButton);

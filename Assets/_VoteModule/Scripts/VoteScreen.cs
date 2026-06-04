@@ -34,6 +34,7 @@ namespace PushPelmesh.VoteModule
         [SerializeField] private Text detailsDescriptionText;
         [SerializeField] private Text detailsMetaText;
         [SerializeField] private Text detailsStatusText;
+        [SerializeField] private Button submitVoteButton;
         [SerializeField] private Transform optionsRoot;
         [SerializeField] private GameObject optionPrefab;
 
@@ -44,6 +45,7 @@ namespace PushPelmesh.VoteModule
         [SerializeField] private InputField titleInput;
         [SerializeField] private InputField descriptionInput;
         [SerializeField] private InputField endDateInput;
+        [SerializeField] private Toggle multipleChoiceToggle;
         [SerializeField] private Transform optionInputsRoot;
         [SerializeField] private GameObject optionInputRowPrefab;
         [SerializeField] private Button addOptionButton;
@@ -54,8 +56,11 @@ namespace PushPelmesh.VoteModule
 
         private readonly List<GameObject> spawnedPollRows = new List<GameObject>();
         private readonly List<GameObject> spawnedOptionRows = new List<GameObject>();
+        private readonly List<VoteOptionView> spawnedOptionViews = new List<VoteOptionView>();
         private readonly List<VoteCreateOptionInputView> createOptionInputs = new List<VoteCreateOptionInputView>();
+        private readonly HashSet<int> selectedOptionIds = new HashSet<int>();
         private bool canChooseAudienceGroups;
+        private bool selectedPollAllowsMultipleChoice;
         private int selectedPollId;
 
         private void Awake()
@@ -82,6 +87,9 @@ namespace PushPelmesh.VoteModule
 
             if (closeDetailsButton != null)
                 closeDetailsButton.onClick.AddListener(ShowList);
+
+            if (submitVoteButton != null)
+                submitVoteButton.onClick.AddListener(SubmitSelectedOptions);
 
             if (closeCreateButton != null)
                 closeCreateButton.onClick.AddListener(ShowList);
@@ -113,6 +121,9 @@ namespace PushPelmesh.VoteModule
 
             if (closeDetailsButton != null)
                 closeDetailsButton.onClick.RemoveListener(ShowList);
+
+            if (submitVoteButton != null)
+                submitVoteButton.onClick.RemoveListener(SubmitSelectedOptions);
 
             if (closeCreateButton != null)
                 closeCreateButton.onClick.RemoveListener(ShowList);
@@ -152,6 +163,51 @@ namespace PushPelmesh.VoteModule
             try
             {
                 VotePollDto poll = await VoteApi.VoteAsync(selectedPollId, optionId);
+                RenderPollDetails(poll);
+                await LoadPollsAsync();
+            }
+            catch (Exception exception)
+            {
+                SetDetailsStatus("Не удалось проголосовать: " + exception.Message);
+                SetOptionsInteractable(true);
+            }
+        }
+
+        public void ToggleOptionSelection(VoteOptionView optionView)
+        {
+            if (optionView == null || optionView.OptionId <= 0 || !selectedPollAllowsMultipleChoice)
+                return;
+
+            bool selected = !optionView.SelectedForSubmit;
+            optionView.SetSelectedForSubmit(selected);
+
+            if (selected)
+                selectedOptionIds.Add(optionView.OptionId);
+            else
+                selectedOptionIds.Remove(optionView.OptionId);
+
+            if (submitVoteButton != null)
+                submitVoteButton.interactable = selectedOptionIds.Count > 0;
+        }
+
+        private async void SubmitSelectedOptions()
+        {
+            if (selectedPollId <= 0 || !selectedPollAllowsMultipleChoice)
+                return;
+
+            if (selectedOptionIds.Count == 0)
+            {
+                SetDetailsStatus("Выберите хотя бы один вариант ответа");
+                return;
+            }
+
+            SetDetailsStatus("Отправка голоса...");
+            SetOptionsInteractable(false);
+
+            try
+            {
+                VotePollDto poll = await VoteApi.VoteAsync(selectedPollId, new List<int>(selectedOptionIds));
+                selectedOptionIds.Clear();
                 RenderPollDetails(poll);
                 await LoadPollsAsync();
             }
@@ -217,6 +273,9 @@ namespace PushPelmesh.VoteModule
         private void RenderPollDetails(VotePollDto poll)
         {
             ClearOptions();
+            selectedOptionIds.Clear();
+            selectedPollAllowsMultipleChoice = false;
+            SetSubmitVoteButtonVisible(false);
 
             if (poll == null)
             {
@@ -225,6 +284,7 @@ namespace PushPelmesh.VoteModule
             }
 
             selectedPollId = poll.id;
+            selectedPollAllowsMultipleChoice = poll.AllowsMultipleChoices;
 
             if (detailsTitleText != null)
                 detailsTitleText.text = string.IsNullOrWhiteSpace(poll.title) ? "Без названия" : poll.title;
@@ -240,13 +300,22 @@ namespace PushPelmesh.VoteModule
             if (poll.options != null)
             {
                 for (int i = 0; i < poll.options.Count; i++)
-                    CreateOptionRow(poll.options[i], canVote);
+                {
+                    if (poll.selectedOptionIds != null && poll.selectedOptionIds.Contains(poll.options[i].id))
+                        poll.options[i].isSelected = true;
+
+                    CreateOptionRow(poll.options[i], canVote, selectedPollAllowsMultipleChoice);
+                }
             }
+
+            SetSubmitVoteButtonVisible(canVote && selectedPollAllowsMultipleChoice);
 
             if (poll.isClosed)
                 SetDetailsStatus("Голосование завершено. Всего голосов: " + poll.totalVotes);
             else if (poll.hasVoted)
                 SetDetailsStatus("Ваш голос принят. Всего голосов: " + poll.totalVotes);
+            else if (poll.canVote && selectedPollAllowsMultipleChoice)
+                SetDetailsStatus("Выберите один или несколько вариантов. Всего голосов: " + poll.totalVotes);
             else if (poll.canVote)
                 SetDetailsStatus("Выберите один из вариантов. Всего голосов: " + poll.totalVotes);
             else
@@ -269,7 +338,7 @@ namespace PushPelmesh.VoteModule
                 row.Setup(this, poll);
         }
 
-        private void CreateOptionRow(VoteOptionDto option, bool canVote)
+        private void CreateOptionRow(VoteOptionDto option, bool canVote, bool selectionMode)
         {
             if (optionsRoot == null || optionPrefab == null)
                 return;
@@ -282,7 +351,10 @@ namespace PushPelmesh.VoteModule
             VoteOptionView optionView = rowObject.GetComponent<VoteOptionView>();
 
             if (optionView != null)
-                optionView.Setup(this, option, canVote);
+            {
+                optionView.Setup(this, option, canVote, selectionMode);
+                spawnedOptionViews.Add(optionView);
+            }
         }
 
         private async void SubmitPoll()
@@ -321,7 +393,9 @@ namespace PushPelmesh.VoteModule
             {
                 title = titleInput != null ? titleInput.text.Trim() : string.Empty,
                 description = descriptionInput != null ? descriptionInput.text.Trim() : string.Empty,
-                endDate = endDateInput != null ? endDateInput.text.Trim() : string.Empty
+                endDate = endDateInput != null ? endDateInput.text.Trim() : string.Empty,
+                isMultipleChoice = multipleChoiceToggle != null && multipleChoiceToggle.isOn,
+                allowMultipleChoices = multipleChoiceToggle != null && multipleChoiceToggle.isOn
             };
 
             for (int i = 0; i < createOptionInputs.Count; i++)
@@ -391,6 +465,9 @@ namespace PushPelmesh.VoteModule
             if (endDateInput != null)
                 endDateInput.text = DateTime.Today.AddDays(7).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
+            if (multipleChoiceToggle != null)
+                multipleChoiceToggle.isOn = false;
+
             ClearCreateOptionInputs();
             AddCreateOptionInput();
             AddCreateOptionInput();
@@ -433,6 +510,8 @@ namespace PushPelmesh.VoteModule
         private void ClearOptions()
         {
             DestroyRows(spawnedOptionRows);
+            spawnedOptionViews.Clear();
+            selectedOptionIds.Clear();
         }
 
         private void AddCreateOptionInput()
@@ -545,6 +624,18 @@ namespace PushPelmesh.VoteModule
                 if (button != null)
                     button.interactable = interactable;
             }
+
+            if (submitVoteButton != null && submitVoteButton.gameObject.activeSelf)
+                submitVoteButton.interactable = interactable && selectedOptionIds.Count > 0;
+        }
+
+        private void SetSubmitVoteButtonVisible(bool visible)
+        {
+            if (submitVoteButton == null)
+                return;
+
+            submitVoteButton.gameObject.SetActive(visible);
+            submitVoteButton.interactable = visible && selectedOptionIds.Count > 0;
         }
 
         private void SetCreateInteractable(bool interactable)
@@ -557,6 +648,9 @@ namespace PushPelmesh.VoteModule
 
             if (addOptionButton != null)
                 addOptionButton.interactable = interactable;
+
+            if (multipleChoiceToggle != null)
+                multipleChoiceToggle.interactable = interactable;
         }
 
         private void SetListStatus(string message)

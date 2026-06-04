@@ -28,9 +28,14 @@ namespace PushPelmesh.VoteModule
         public bool hasVoted;
         public bool canVote;
         public int selectedOptionId;
+        public bool isMultipleChoice;
+        public bool allowMultipleChoices;
         public int totalVotes;
+        public List<int> selectedOptionIds = new List<int>();
         public List<string> audienceGroups = new List<string>();
         public List<VoteOptionDto> options = new List<VoteOptionDto>();
+
+        public bool AllowsMultipleChoices => isMultipleChoice || allowMultipleChoices;
     }
 
     [Serializable]
@@ -49,6 +54,8 @@ namespace PushPelmesh.VoteModule
         public string title;
         public string description;
         public string endDate;
+        public bool isMultipleChoice;
+        public bool allowMultipleChoices;
         public List<string> options = new List<string>();
         public List<string> audienceGroups = new List<string>();
     }
@@ -57,5 +64,6 @@ namespace PushPelmesh.VoteModule
     public class VotePollVoteRequest
     {
         public int optionId;
+        public List<int> optionIds = new List<int>();
     }
 }
