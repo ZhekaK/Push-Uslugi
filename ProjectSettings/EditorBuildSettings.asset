@@ -38,6 +38,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_VoteModule/Scenes/VoteScene.unity
     guid: dd17e9782b3d90d458febafba3c2e8b7
+  - enabled: 1
+    path: Assets/_Zong/Scenes/ZongScene.unity
+    guid: ee879065008220b4f8479715ee27a5a9
+  - enabled: 1
+    path: Assets/_Durak/Scenes/DurakScene.unity
+    guid: 1f1d19a39a4896b4bb9e9aa0d874314c
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0
