@@ -11,6 +11,7 @@ namespace PushPelmesh.CinemaModule
         [SerializeField] private Button linkButton;
 
         private string url;
+        private static readonly Color ExtraColor = new Color(0.89f, 0.83f, 0.98f, 1f);
 
         private void Awake()
         {
@@ -27,6 +28,16 @@ namespace PushPelmesh.CinemaModule
         public void Setup(CinemaMovieDto movie)
         {
             url = movie != null ? movie.url : string.Empty;
+
+            Image background = GetComponent<Image>();
+            if (background != null && movie != null && movie.isExtra)
+                background.color = ExtraColor;
+            if (movie != null && movie.isExtra)
+            {
+                ColorCell(titleText);
+                ColorCell(ratingText);
+                ColorCell(watchedAtText);
+            }
 
             if (titleText != null)
                 titleText.text = string.IsNullOrWhiteSpace(movie?.title) ? "-" : movie.title;
@@ -45,6 +56,15 @@ namespace PushPelmesh.CinemaModule
         {
             if (!string.IsNullOrWhiteSpace(url))
                 Application.OpenURL(url);
+        }
+
+        private static void ColorCell(Text cellText)
+        {
+            Image cellBackground = cellText != null && cellText.transform.parent != null
+                ? cellText.transform.parent.GetComponent<Image>()
+                : null;
+            if (cellBackground != null)
+                cellBackground.color = ExtraColor;
         }
     }
 }

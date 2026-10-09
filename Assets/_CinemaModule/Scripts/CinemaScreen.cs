@@ -34,6 +34,7 @@ namespace PushPelmesh.CinemaModule
         [SerializeField] private Text addStatusText;
         [SerializeField] private Button submitButton;
         [SerializeField] private Button cancelButton;
+        private Toggle extraToggle;
 
         private readonly List<GameObject> spawnedRows = new List<GameObject>();
 
@@ -55,6 +56,8 @@ namespace PushPelmesh.CinemaModule
 
             if (addPanel != null)
                 addPanel.SetActive(false);
+
+            CreateExtraToggle();
 
             if (rowPrefab != null)
                 rowPrefab.SetActive(false);
@@ -173,6 +176,9 @@ namespace PushPelmesh.CinemaModule
             if (urlInput != null)
                 urlInput.text = string.Empty;
 
+            if (extraToggle != null)
+                extraToggle.isOn = false;
+
             if (addStatusText != null)
                 addStatusText.text = string.Empty;
 
@@ -217,7 +223,8 @@ namespace PushPelmesh.CinemaModule
                 Title = title,
                 Rating = rating,
                 WatchedAt = watchedAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-                Url = urlInput != null ? urlInput.text.Trim() : string.Empty
+                Url = urlInput != null ? urlInput.text.Trim() : string.Empty,
+                IsExtra = extraToggle != null && extraToggle.isOn
             };
 
             SetSubmitInteractable(false);
@@ -251,6 +258,69 @@ namespace PushPelmesh.CinemaModule
                 CultureInfo.InvariantCulture,
                 DateTimeStyles.None,
                 out date);
+        }
+
+        private void CreateExtraToggle()
+        {
+            if (urlInput == null || addStatusText == null)
+                return;
+
+            Transform parent = urlInput.transform.parent;
+            if (parent == null)
+                return;
+
+            GameObject row = new GameObject("ExtraToggleRow", typeof(RectTransform), typeof(Image), typeof(Toggle), typeof(LayoutElement));
+            row.transform.SetParent(parent, false);
+            RectTransform rowRect = row.GetComponent<RectTransform>();
+            rowRect.anchorMin = Vector2.one;
+            rowRect.anchorMax = Vector2.one;
+            rowRect.pivot = Vector2.one;
+            rowRect.anchoredPosition = new Vector2(-12f, -1f);
+            rowRect.sizeDelta = new Vector2(180f, 34f);
+            row.GetComponent<LayoutElement>().ignoreLayout = true;
+            Image rowImage = row.GetComponent<Image>();
+            rowImage.color = Color.clear;
+            extraToggle = row.GetComponent<Toggle>();
+
+            GameObject box = new GameObject("Checkbox", typeof(RectTransform), typeof(Image));
+            RectTransform boxRect = box.GetComponent<RectTransform>();
+            boxRect.SetParent(row.transform, false);
+            boxRect.anchorMin = new Vector2(0f, 0.5f);
+            boxRect.anchorMax = boxRect.anchorMin;
+            boxRect.anchoredPosition = new Vector2(17f, 0f);
+            boxRect.sizeDelta = new Vector2(28f, 28f);
+            Image boxImage = box.GetComponent<Image>();
+            boxImage.color = Color.white;
+            boxImage.raycastTarget = false;
+
+            GameObject check = new GameObject("Checkmark", typeof(RectTransform), typeof(Image));
+            RectTransform checkRect = check.GetComponent<RectTransform>();
+            checkRect.SetParent(boxRect, false);
+            checkRect.anchorMin = new Vector2(0.5f, 0.5f);
+            checkRect.anchorMax = checkRect.anchorMin;
+            checkRect.sizeDelta = new Vector2(18f, 18f);
+            Image checkImage = check.GetComponent<Image>();
+            checkImage.color = new Color(0.56f, 0.3f, 0.8f);
+            checkImage.raycastTarget = false;
+            extraToggle.targetGraphic = rowImage;
+            extraToggle.graphic = checkImage;
+            extraToggle.isOn = false;
+
+            GameObject labelObject = new GameObject("ExtraLabel", typeof(RectTransform), typeof(Text));
+            RectTransform labelRect = labelObject.GetComponent<RectTransform>();
+            labelRect.SetParent(row.transform, false);
+            labelRect.anchorMin = new Vector2(0f, 0f);
+            labelRect.anchorMax = new Vector2(1f, 1f);
+            labelRect.offsetMin = new Vector2(44f, 0f);
+            labelRect.offsetMax = Vector2.zero;
+            Text label = labelObject.GetComponent<Text>();
+            label.font = addStatusText.font;
+            label.fontSize = 21;
+            label.color = new Color(0.2f, 0.16f, 0.28f);
+            label.alignment = TextAnchor.MiddleLeft;
+            label.text = "Экстра";
+            label.raycastTarget = false;
+
         }
 
         private static bool HasRole(UserRoleResponse roles, string roleType)

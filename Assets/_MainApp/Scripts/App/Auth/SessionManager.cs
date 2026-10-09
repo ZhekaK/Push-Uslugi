@@ -29,7 +29,9 @@ namespace PushPelmesh.App.Auth
             {
                 if (exception.StatusCode == 401)
                 {
-                    Logout();
+                    CurrentProfile = null;
+                    userRole = null;
+                    TokenStorage.ClearToken();
                     return false;
                 }
 
@@ -48,6 +50,7 @@ namespace PushPelmesh.App.Auth
             userRole = null;
 
             TokenStorage.ClearToken();
+            TokenStorage.ClearRememberToken();
         }
     }
 }

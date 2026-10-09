@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using PushPelmesh.App;
@@ -62,6 +63,7 @@ namespace PushPelmesh.VoteModule
         private bool canChooseAudienceGroups;
         private bool selectedPollAllowsMultipleChoice;
         private int selectedPollId;
+        private ScrollRect optionInputsScroll;
 
         private void Awake()
         {
@@ -75,6 +77,13 @@ namespace PushPelmesh.VoteModule
 
             if (optionInputRowPrefab != null)
                 optionInputRowPrefab.SetActive(false);
+
+            if (optionInputsRoot != null)
+            {
+                optionInputsScroll = optionInputsRoot.GetComponentInParent<ScrollRect>(true);
+                if (optionInputsScroll != null)
+                    optionInputsScroll.scrollSensitivity = 45f;
+            }
 
             if (backButton != null)
                 backButton.onClick.AddListener(BackToMainMenu);
@@ -103,9 +112,9 @@ namespace PushPelmesh.VoteModule
 
         private async void Start()
         {
+            ShowList();
             await RefreshPermissionsAsync();
             await LoadPollsAsync();
-            ShowList();
         }
 
         private void OnDestroy()
@@ -531,6 +540,19 @@ namespace PushPelmesh.VoteModule
             createOptionInputs.Add(input);
             input.Setup(this, "Вариант " + createOptionInputs.Count);
             RefreshCreateOptionRemoveButtons();
+            StartCoroutine(ScrollCreateOptionsToBottom());
+        }
+
+        private IEnumerator ScrollCreateOptionsToBottom()
+        {
+            yield return null;
+
+            if (optionInputsScroll == null || optionInputsRoot == null)
+                yield break;
+
+            Canvas.ForceUpdateCanvases();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(optionInputsRoot as RectTransform);
+            optionInputsScroll.verticalNormalizedPosition = 0f;
         }
 
         public void RemoveCreateOptionInput(VoteCreateOptionInputView optionInput)
@@ -552,7 +574,10 @@ namespace PushPelmesh.VoteModule
             for (int i = 0; i < createOptionInputs.Count; i++)
             {
                 if (createOptionInputs[i] != null)
+                {
+                    createOptionInputs[i].gameObject.SetActive(false);
                     Destroy(createOptionInputs[i].gameObject);
+                }
             }
 
             createOptionInputs.Clear();

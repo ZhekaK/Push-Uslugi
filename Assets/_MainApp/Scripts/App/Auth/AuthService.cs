@@ -18,6 +18,7 @@ namespace PushPelmesh.App.Auth
             var response = JsonUtility.FromJson<AuthResponse>(responseJson);
 
             TokenStorage.SaveToken(response.token);
+            TokenStorage.ClearRememberToken();
             SessionManager.userRole = null;
 
             return response;
@@ -40,8 +41,29 @@ namespace PushPelmesh.App.Auth
             var response = JsonUtility.FromJson<AuthResponse>(responseJson);
 
             TokenStorage.SaveToken(response.token);
+            TokenStorage.ClearRememberToken();
+            if (!string.IsNullOrWhiteSpace(response.rememberToken))
+                TokenStorage.SaveRememberToken(response.rememberToken);
             SessionManager.userRole = null;
 
+            return response;
+        }
+
+        public static async Task<AuthResponse> LoginByNameAsync(string firstName)
+        {
+            var request = new LoginByNameRequest
+            {
+                rememberToken = TokenStorage.GetRememberToken(),
+                firstName = firstName
+            };
+
+            string responseJson = await ApiClient.PostJsonAsync(
+                "/api/auth/login-by-name", JsonUtility.ToJson(request));
+            var response = JsonUtility.FromJson<AuthResponse>(responseJson);
+            TokenStorage.SaveToken(response.token);
+            if (!string.IsNullOrWhiteSpace(response.rememberToken))
+                TokenStorage.SaveRememberToken(response.rememberToken);
+            SessionManager.userRole = null;
             return response;
         }
 

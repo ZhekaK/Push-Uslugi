@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using PushPelmesh.App.Auth;
 using PushPelmesh.App.Models;
 using PushPelmesh.App.Notifications;
+using PushPelmesh.Messenger;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -57,6 +58,8 @@ namespace PushPelmesh.App.MainMenu
 {
     public class MainMenuScreen : MonoBehaviour
     {
+        private const string MessengerModuleKey = "MessengerScene";
+
         [Serializable]
         public class ServiceModule
         {
@@ -80,6 +83,8 @@ namespace PushPelmesh.App.MainMenu
 
         private bool canUseNotifications;
         private bool notificationRequestInProgress;
+        private bool messengerBadgeBusy;
+        private bool existingPushRebound;
 
         private void Awake()
         {
@@ -114,6 +119,7 @@ namespace PushPelmesh.App.MainMenu
                 notificationRequestInProgress = false;
                 SetNotificationButtonsVisible(false, false);
                 StopModuleNotificationsPolling();
+                StopMessengerBadgePolling();
             }
 
             foreach (ServiceModule serviceModule in serviceModules)
@@ -129,6 +135,7 @@ namespace PushPelmesh.App.MainMenu
         private void OnDestroy()
         {
             StopModuleNotificationsPolling();
+            StopMessengerBadgePolling();
 
             logoutButton.onClick.RemoveListener(OnLogoutClicked);
             foreach (ServiceModule serviceModule in serviceModules)
@@ -144,7 +151,8 @@ namespace PushPelmesh.App.MainMenu
                 return;
 
             SetModuleNotificationIcon(module, false);
-            MarkModuleNotificationsRead(module);
+            if (!IsMessengerModule(module))
+                MarkModuleNotificationsRead(module);
             SceneManager.LoadScene(module.SceneName);
         }
 
@@ -152,6 +160,8 @@ namespace PushPelmesh.App.MainMenu
         {
             if (!TryBeginNotificationRequest())
                 return;
+
+            existingPushRebound = true;
 
 #if UNITY_WEBGL && !UNITY_EDITOR
             WebPushService.Register(gameObject.name, nameof(OnPushSubscriptionStateChanged));
@@ -213,6 +223,11 @@ namespace PushPelmesh.App.MainMenu
                 string.Equals(isSubscribedText, "true", StringComparison.OrdinalIgnoreCase);
 
             SetNotificationButtonsVisible(!isSubscribed, isSubscribed);
+            if (isSubscribed && !existingPushRebound)
+            {
+                existingPushRebound = true;
+                WebPushService.Register(gameObject.name, nameof(OnPushSubscriptionStateChanged));
+            }
         }
 
         public async void OnPushUnsubscribeEndpointReceived(string endpoint)
@@ -254,6 +269,7 @@ namespace PushPelmesh.App.MainMenu
                 ApplyAccess(profile);
                 RefreshNotificationButtons();
                 RestartModuleNotificationsPolling();
+                RestartMessengerBadgePolling();
             }
             catch (Exception exception)
             {
@@ -303,7 +319,10 @@ namespace PushPelmesh.App.MainMenu
                 }
 
                 foreach (ServiceModule serviceModule in serviceModules)
-                    SetModuleNotificationIcon(serviceModule, unreadModuleKeys.Contains(GetModuleKey(serviceModule)));
+                {
+                    if (!IsMessengerModule(serviceModule))
+                        SetModuleNotificationIcon(serviceModule, unreadModuleKeys.Contains(GetModuleKey(serviceModule)));
+                }
             }
             catch (Exception exception)
             {
@@ -330,6 +349,45 @@ namespace PushPelmesh.App.MainMenu
         private void StopModuleNotificationsPolling()
         {
             CancelInvoke(nameof(RefreshModuleNotifications));
+        }
+
+        private void RestartMessengerBadgePolling()
+        {
+            StopMessengerBadgePolling();
+            if (!canUseNotifications || !TokenStorage.HasToken())
+                return;
+            RefreshMessengerBadge();
+            InvokeRepeating(nameof(RefreshMessengerBadge), 10f, 10f);
+        }
+
+        private void StopMessengerBadgePolling()
+        {
+            CancelInvoke(nameof(RefreshMessengerBadge));
+        }
+
+        private async void RefreshMessengerBadge()
+        {
+            if (messengerBadgeBusy)
+                return;
+            messengerBadgeBusy = true;
+            try
+            {
+                List<MessengerChatDto> chats = await MessengerApi.GetChatsAsync();
+                bool unread = chats.Exists(x => x.unread && !x.muted);
+                foreach (ServiceModule module in serviceModules)
+                {
+                    if (IsMessengerModule(module))
+                        SetModuleNotificationIcon(module, unread);
+                }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning(exception);
+            }
+            finally
+            {
+                messengerBadgeBusy = false;
+            }
         }
 
         private async void MarkModuleNotificationsRead(ServiceModule module)
@@ -371,6 +429,9 @@ namespace PushPelmesh.App.MainMenu
 
             return string.IsNullOrWhiteSpace(module.SceneName) ? string.Empty : module.SceneName.Trim();
         }
+
+        private static bool IsMessengerModule(ServiceModule module) =>
+            string.Equals(GetModuleKey(module), MessengerModuleKey, StringComparison.OrdinalIgnoreCase);
 
         private bool TryBeginNotificationRequest()
         {

@@ -17,6 +17,7 @@ namespace PushPelmesh.CinemaModule
         public float rating;
         public string watchedAt;
         public string url;
+        public bool isExtra;
         public string createdAt;
     }
 
@@ -27,5 +28,6 @@ namespace PushPelmesh.CinemaModule
         public float Rating;
         public string WatchedAt;
         public string Url;
+        public bool IsExtra;
     }
 }

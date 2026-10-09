@@ -15,7 +15,23 @@ namespace PushPelmesh.App.Models
     {
         public string message;
         public string token;
+        public string rememberToken;
         public UserDto user;
+    }
+
+    [Serializable]
+    public class LoginByNameRequest
+    {
+        public string rememberToken;
+        public string firstName;
+    }
+
+    [Serializable]
+    public class LoginByNameErrorResponse
+    {
+        public string message;
+        public int attemptsRemaining;
+        public bool requiresKeyLogin;
     }
 
     [Serializable]
